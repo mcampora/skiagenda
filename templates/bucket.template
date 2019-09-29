@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Creates a static website using S3
+Parameters:
+  BucketName:
+    Type: String
+    Description: The name for the bucket hosting your website
+    Default: mcmagenda
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+      - Label:
+          default: Website Configuration
+        Parameters:
+          - BucketName
+    ParameterLabels:
+      BucketName:
+        default: "Website Bucket Name"
+Resources:
+  WebsiteBucket:
+    Properties:
+      BucketName: !Ref BucketName
+      WebsiteConfiguration:
+        IndexDocument: index.html
+    Type: "AWS::S3::Bucket"
+  WebsiteBucketPolicy:
+    Properties:
+      Bucket: !Ref WebsiteBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "arn:aws:s3:::${WebsiteBucket}/*"
+    Type: "AWS::S3::BucketPolicy"
+  S3CopyRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      Path: /agenda/
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: S3Access
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Sid: AllowLogging
+                Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: '*'
+              - Sid: SourceBucketReadAccess
+                Effect: Allow
+                Action:
+                  - 's3:ListBucket'
+                  - 's3:GetObject'
+                Resource:
+                  - !Sub 'arn:aws:s3:::source'
+                  - !Sub 'arn:aws:s3:::source/website/*'
+              - Sid: DestBucketWriteAccess
+                Effect: Allow
+                Action:
+                  - 's3:ListBucket'
+                  - 's3:GetObject'
+                  - 's3:PutObject'
+                  - 's3:PutObjectAcl'
+                  - 's3:PutObjectVersionAcl'
+                  - 's3:DeleteObject'
+                  - 's3:DeleteObjectVersion'
+                  - 's3:CopyObject'
+                Resource:
+                  - !Sub 'arn:aws:s3:::${WebsiteBucket}'
+                  - !Sub 'arn:aws:s3:::${WebsiteBucket}/*'
+Outputs:
+  WebsiteURL:
+    Value: !GetAtt 
+      - WebsiteBucket
+      - WebsiteURL
