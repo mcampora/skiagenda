@@ -5,23 +5,15 @@ Parameters:
     Type: String
     Description: The name for the bucket hosting your website
     Default: skiagenda
-Metadata:
-  'AWS::CloudFormation::Interface':
-    ParameterGroups:
-      - Label:
-          default: Website Configuration
-        Parameters:
-          - BucketName
-    ParameterLabels:
-      BucketName:
-        default: "Website Bucket Name"
 Resources:
+  # S3 bucket containing the Web site
   WebsiteBucket:
     Properties:
       BucketName: !Ref BucketName
       WebsiteConfiguration:
         IndexDocument: index.html
     Type: "AWS::S3::Bucket"
+  # access policy for the previous bucket
   WebsiteBucketPolicy:
     Properties:
       Bucket: !Ref WebsiteBucket
@@ -33,6 +25,22 @@ Resources:
             Action: "s3:GetObject"
             Resource: !Sub "arn:aws:s3:::${WebsiteBucket}/*"
     Type: "AWS::S3::BucketPolicy"
+  # Cognito pool to register and authenticate users
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: skiagendaUsers
+      AliasAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+  # Cognito client app
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: skiagendaWebApp
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false
 Outputs:
   WebsiteURL:
     Value: !GetAtt 
