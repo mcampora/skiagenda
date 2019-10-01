@@ -2,34 +2,38 @@ const AWS = require('aws-sdk');
 const ddb = new AWS.DynamoDB.DocumentClient();
 const randomBytes = require('crypto').randomBytes;
 
-const fleet = [
-    {   Name: 'Bucephalus',
-        Color: 'Golden',
-        Gender: 'Male',
-    },
-    {   Name: 'Shadowfax',
-        Color: 'White',
-        Gender: 'Male',
-    },
-    {   Name: 'Rocinante',
-        Color: 'Yellow',
-        Gender: 'Female',
-    },
-];
-
+// Check that there's no overlapping reservation then record it
+// expect an object like this:
+//  {
+//      "path": "/skiagenda",
+//      "httpMethod": "POST",
+//      "headers": {
+//          "Accept": "*/*",
+//          "Authorization": "eyJraWQiOiJLTzRVMWZs",
+//          "content-type": "application/json; charset=UTF-8"
+//      },
+//      "queryStringParameters": null,
+//      "pathParameters": null,
+//      "requestContext": {
+//          "authorizer": {
+//              "claims": {
+//                  "cognito:username": "the_username"
+//              }
+//          }
+//      },  
+//      "body": "{\"resa\":{\"begin\":47.6174755835663,\"end\":-122.28837066650185}}"
+//  }
 exports.handler = (event, context, callback) => {
+
+    // check we recieved a security context
     if (!event.requestContext.authorizer) {
       errorResponse('Authorization not configured', context.awsRequestId, callback);
       return;
     }
 
-    // early exit at this stage
-    errorResponse('Temporary exit', context.awsRequestId, callback);
-    return;
-
-
-    const rideId = toUrlString(randomBytes(16));
-    console.log('Received event (', rideId, '): ', event);
+    // Generate a random id for this reservation
+    const resa = toUrlString(randomBytes(16));
+    console.log('Received event (', resa, '): ', event);
 
     // Because we're using a Cognito User Pools authorizer, all of the claims
     // included in the authentication token are provided in the request context.
@@ -41,24 +45,22 @@ exports.handler = (event, context, callback) => {
     // into an object. A more robust implementation might inspect the Content-Type
     // header first and use a different parsing strategy based on that value.
     const requestBody = JSON.parse(event.body);
+    const begin = requestBody.resa.begin;
+    const end = requestBody.resa.end;
 
-    const pickupLocation = requestBody.PickupLocation;
-    const unicorn = findUnicorn(pickupLocation);
-    recordRide(rideId, username, unicorn).then(() => {
+    recordResa(resa, username, begin, end).then(() => {
         // You can use the callback function to provide a return value from your Node.js
         // Lambda functions. The first parameter is used for failed invocations. The
         // second parameter specifies the result data of the invocation.
-
         // Because this Lambda function is called by an API Gateway proxy integration
         // the result object must use the following structure.
         callback(null, {
             statusCode: 201,
             body: JSON.stringify({
-                RideId: rideId,
-                Unicorn: unicorn,
-                UnicornName: unicorn.Name,
-                Eta: '30 seconds',
-                Rider: username,
+                id: resa,
+                begin: begin,
+                end: end,
+                user: username,
             }),
             headers: {
                 'Access-Control-Allow-Origin': '*',
@@ -66,32 +68,23 @@ exports.handler = (event, context, callback) => {
         });
     }).catch((err) => {
         console.error(err);
-
         // If there is an error during processing, catch it and return
         // from the Lambda function successfully. Specify a 500 HTTP status
         // code and provide an error message in the body. This will provide a
         // more meaningful error response to the end client.
         errorResponse(err.message, context.awsRequestId, callback)
     });
-};
-
-// This is where you would implement logic to find the optimal unicorn for
-// this ride (possibly invoking another Lambda function as a microservice.)
-// For simplicity, we'll just pick a unicorn at random.
-function findUnicorn(pickupLocation) {
-    console.log('Finding unicorn for ', pickupLocation.Latitude, ', ', pickupLocation.Longitude);
-    return fleet[Math.floor(Math.random() * fleet.length)];
 }
 
-function recordRide(rideId, username, unicorn) {
+function recordResa(resa, username, begin, end) {
     return ddb.put({
-        TableName: 'Rides',
+        TableName: 'Reservations',
         Item: {
-            RideId: rideId,
+            resaid: resa,
             User: username,
-            Unicorn: unicorn,
-            UnicornName: unicorn.Name,
-            RequestTime: new Date().toISOString(),
+            Begin: begin,
+            End: end,
+            CreationTime: new Date().toISOString(),
         },
     }).promise();
 }
@@ -104,14 +97,15 @@ function toUrlString(buffer) {
 }
 
 function errorResponse(errorMessage, awsRequestId, callback) {
-  callback(null, {
-    statusCode: 500,
-    body: JSON.stringify({
-      Error: errorMessage,
-      Reference: awsRequestId,
-    }),
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-    },
-  });
-}
+    callback(null, {
+      statusCode: 500,
+      body: JSON.stringify({
+        Error: errorMessage,
+        Reference: awsRequestId,
+      }),
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+  }
+  
