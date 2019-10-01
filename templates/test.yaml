@@ -1,11 +1,39 @@
-  Statement:
-    - Effect: "Allow"
-      Principal:
-        Service: "lambda.amazonaws.com"
-      Action: "sts:AssumeRole"
-
-  Statement:
-    - Effect: "Allow"
-      Action: "dynamodb:PutItem"
-      Resource: "*"
-
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Prepare new instructions
+Parameters:
+  SourceBucketName:
+    Type: String
+    Description: The name for the bucket where all static resources have been uploaded before
+    Default: skiagenda-source
+  WebsiteBucketName:
+    Type: String
+    Description: The name for the bucket hosting your website
+    Default: skiagenda
+Resources:
+  BackendLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: DynamoDBWriteAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: dynamodb:PutItem
+                Resource: "*"
+  # the function used to retieve the reservations for a given period
+  ListReservationsFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: listReservations.handler
+      Runtime: nodejs8.10
+      Role: !GetAtt BackendLambdaRole.Arn
+      Timeout: 60
+      Code:
+        S3Bucket: !Ref SourceBucketName
+        S3Key: backend/functions.zip
