@@ -1,38 +1,39 @@
 const AWS = require('aws-sdk');
 const ddb = new AWS.DynamoDB.DocumentClient();
 const randomBytes = require('crypto').randomBytes;
+const utils = require('utils.js');
 
-// Check that there's no overlapping reservation then record it
-// expect an object like this:
-//  {
-//      "path": "/skiagenda",
-//      "httpMethod": "POST",
-//      "headers": {
-//          "Accept": "*/*",
-//          "Authorization": "eyJraWQiOiJLTzRVMWZs",
-//          "content-type": "application/json; charset=UTF-8"
-//      },
-//      "queryStringParameters": null,
-//      "pathParameters": null,
-//      "requestContext": {
-//          "authorizer": {
-//              "claims": {
-//                  "cognito:username": "the_username"
-//              }
-//          }
-//      },  
-//      "body": "{\"resa\":{\"begin\":47.6174755835663,\"end\":-122.28837066650185}}"
-//  }
+// Check that there's no overlapping reservation 
+// then record it, expect an object like this:
+const test =
+  {
+      "path": "/skiagenda",
+      "httpMethod": "POST",
+      "headers": {
+          "Accept": "*/*",
+          "Authorization": "eyJraWQiOiJLTzRVMWZs",
+          "content-type": "application/json; charset=UTF-8"
+      },
+      "queryStringParameters": null,
+      "pathParameters": null,
+      "requestContext": {
+          "authorizer": {
+              "claims": {
+                  "cognito:username": "the_username"
+              }
+          }
+      },  
+      "body": "{\"resa\":{\"begin\":47.6174755835663,\"end\":-122.28837066650185}}"
+  }
 exports.handler = (event, context, callback) => {
-
-    // check we recieved a security context
+    // check we received a security context
     if (!event.requestContext.authorizer) {
-      errorResponse('Authorization not configured', context.awsRequestId, callback);
+      utils.errorResponse('Authorization not configured', context.awsRequestId, callback);
       return;
     }
 
     // Generate a random id for this reservation
-    const resa = toUrlString(randomBytes(16));
+    const resa = utils.toUrlString(randomBytes(16));
     console.log('Received event (', resa, '): ', event);
 
     // Because we're using a Cognito User Pools authorizer, all of the claims
@@ -72,7 +73,7 @@ exports.handler = (event, context, callback) => {
         // from the Lambda function successfully. Specify a 500 HTTP status
         // code and provide an error message in the body. This will provide a
         // more meaningful error response to the end client.
-        errorResponse(err.message, context.awsRequestId, callback)
+        utils.errorResponse(err.message, context.awsRequestId, callback)
     });
 }
 
@@ -88,24 +89,3 @@ function recordResa(resa, username, begin, end) {
         },
     }).promise();
 }
-
-function toUrlString(buffer) {
-    return buffer.toString('base64')
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=/g, '');
-}
-
-function errorResponse(errorMessage, awsRequestId, callback) {
-    callback(null, {
-      statusCode: 500,
-      body: JSON.stringify({
-        Error: errorMessage,
-        Reference: awsRequestId,
-      }),
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
-  }
-  

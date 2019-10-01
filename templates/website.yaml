@@ -314,6 +314,48 @@ Resources:
         ReadCapacityUnits: "5"
         WriteCapacityUnits: "5"
 
+  # Role for backend lambda granting access to DynamoDB
+  BackendLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: DynamoDBWriteAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: dynamodb:PutItem
+                Resource: "*"
+
+  # the function used to retrieve the reservations for a given period
+  ListReservationsFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: listReservations.handler
+      Runtime: nodejs8.10
+      Role: !GetAtt BackendLambdaRole.Arn
+      Timeout: 60
+      Code:
+        S3Bucket: !Ref SourceBucketName
+        S3Key: backend/functions.zip
+        
+  # the function used to insert a reservation for a given period
+  AddReservationFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: addReservation.handler
+      Runtime: nodejs8.10
+      Role: !GetAtt BackendLambdaRole.Arn
+      Timeout: 60
+      Code:
+        S3Bucket: !Ref SourceBucketName
+        S3Key: backend/functions.zip
+
 Outputs:
   WebsiteURL:
     Value: !GetAtt WebsiteBucket.WebsiteURL
