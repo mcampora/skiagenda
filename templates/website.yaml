@@ -356,6 +356,12 @@ Resources:
         S3Bucket: !Ref SourceBucketName
         S3Key: backend/functions.zip
 
+  # create a REST API that will expose our lambda functions
+  RestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: skiagendaApi
+
 Outputs:
-  WebsiteURL:
+  URL:
     Value: !GetAtt WebsiteBucket.WebsiteURL
