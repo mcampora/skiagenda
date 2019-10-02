@@ -362,6 +362,54 @@ Resources:
     Properties:
       Name: skiagendaApi
 
+  # create an authorizer that will control access to this API 
+  # using the CognitoPool we created before
+  RestApiAuthorizer:
+    Type: 'AWS::ApiGateway::Authorizer'
+    Properties:
+      ProviderARNs: 
+        - !GetAtt UserPool.Arn
+      AuthorizerResultTtlInSeconds: '300'
+      Type: COGNITO_USER_POOLS
+      IdentitySource: method.request.header.Auth
+      Name: skiagendaApiAuthorizer
+      RestApiId: !Ref RestApi
+
+  # create a resource
+  Resa:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId: !Ref RestApi
+      ParentId: !GetAtt 
+        - RestApi
+        - RootResourceId
+      PathPart: resa
+
+  # then a method
+  Method:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: "POST"
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref RestApiAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub
+          - "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations"
+          - lambdaArn: !GetAtt "AddReservationFunction.Arn"
+      ResourceId: !Ref Resa
+      RestApiId: !Ref RestApi
+
+  # then a deployemt & stage
+  GatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - Method
+    Properties:
+      RestApiId: !Ref RestApi
+      StageName: prod
+
 Outputs:
   URL:
     Value: !GetAtt WebsiteBucket.WebsiteURL
