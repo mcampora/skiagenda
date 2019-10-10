@@ -15,7 +15,7 @@ Parameters:
 Resources:
 
   # S3 bucket containing the Web site content
-  WebsiteBucket:
+  Bucket:
     Type: "AWS::S3::Bucket"
     Properties:
       BucketName: !Ref WebsiteBucketName
@@ -23,25 +23,25 @@ Resources:
         IndexDocument: index.html
 
   # access policy for the previous bucket
-  WebsiteBucketPolicy:
+  BucketPolicy:
     Type: "AWS::S3::BucketPolicy"
     Properties:
-      Bucket: !Ref WebsiteBucket
+      Bucket: !Ref Bucket
       PolicyDocument:
         Statement:
           - Effect: Allow
             Principal: "*"
             Action: "s3:GetObject"
-            Resource: !Sub "arn:aws:s3:::${WebsiteBucket}/*"
+            Resource: !Sub "arn:aws:s3:::${Bucket}/*"
   
-  # copy object triggering the invokation of the copy funciton
-  WebsiteContent:
+  # object triggering the invokation of the copy function
+  TriggerCopy:
    Type: "Custom::S3Objects"
    Properties:
       ServiceToken: !GetAtt CopyS3ObjectsFunction.Arn
       SourceBucket: !Ref SourceBucketName
       SourcePrefix: !Sub "website/"
-      Bucket: !Ref WebsiteBucket
+      Bucket: !Ref Bucket
 
   # the role and access rights the function will get
   CopyS3ObjectsRole:
@@ -92,7 +92,7 @@ Resources:
       Handler: index.handler
       Runtime: python2.7
       Role: !GetAtt CopyS3ObjectsRole.Arn
-      Timeout: 120
+      Timeout: 60
       Code:
         ZipFile: |
           import os
@@ -143,7 +143,7 @@ Resources:
   UserPool:
     Type: AWS::Cognito::UserPool
     Properties:
-      UserPoolName: skiagendaUsers
+      UserPoolName: skiagenda
       AliasAttributes:
         - email
       AutoVerifiedAttributes:
@@ -153,12 +153,12 @@ Resources:
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
-      ClientName: skiagendaWebApp
+      ClientName: skiagenda
       UserPoolId: !Ref UserPool
       GenerateSecret: false
 
   # Invoke a custom function to patch the website cognito config file
-  UpdateConfig:
+  TriggerUpdate:
     Type: "Custom::ConfigFile"
     Properties:
       ServiceToken: !GetAtt UpdateConfigFunction.Arn
@@ -168,7 +168,7 @@ Resources:
       Bucket: !Ref WebsiteBucketName
   
   # Role used by the custom function to patch the website cognito config file
-  CognitoConfigRole:
+  UpdateConfigRole:
     Type: AWS::IAM::Role
     Properties:
       Path: /skiagenda/
@@ -180,7 +180,7 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: CognitoConfig
+        - PolicyName: UpdateConfigRole
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -215,8 +215,8 @@ Resources:
       Description: ...
       Handler: index.handler
       Runtime: python2.7
-      Role: !GetAtt CognitoConfigRole.Arn
-      Timeout: 120
+      Role: !GetAtt UpdateConfigRole.Arn
+      Timeout: 60
       Code:
         ZipFile: |
           import json
@@ -230,7 +230,6 @@ Resources:
             clientId = properties['Client']
             region = properties['Region']
             bucket = properties['Bucket']
-
             object = s3.Object(bucket, 'js/config.js')
             config_content = """
           var _config = {
@@ -315,42 +314,38 @@ Resources:
         WriteCapacityUnits: "5"
 
   # Role for backend lambda granting access to DynamoDB
-  BackendLambdaRole:
+  BackendRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Statement:
           - Effect: Allow
             Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
+              Service: 
+                - lambda.amazonaws.com
+            Action: 
+              - sts:AssumeRole
       Policies:
         - PolicyName: DynamoDBWriteAccess
           PolicyDocument:
             Statement:
               - Effect: Allow
-                Action: dynamodb:PutItem
+                Action: 
+                  - dynamodb:PutItem
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
                 Resource: "*"
 
-  # the function used to retrieve the reservations for a given period
-  ListReservationsFunction:
-    Type: AWS::Lambda::Function
-    Properties:
-      Handler: listReservations.handler
-      Runtime: nodejs8.10
-      Role: !GetAtt BackendLambdaRole.Arn
-      Timeout: 60
-      Code:
-        S3Bucket: !Ref SourceBucketName
-        S3Key: backend/functions.zip
-        
   # the function used to insert a reservation for a given period
   AddReservationFunction:
     Type: AWS::Lambda::Function
+    DependsOn:
+      - "BackendRole"
     Properties:
       Handler: addReservation.handler
       Runtime: nodejs8.10
-      Role: !GetAtt BackendLambdaRole.Arn
+      Role: !GetAtt BackendRole.Arn
       Timeout: 60
       Code:
         S3Bucket: !Ref SourceBucketName
@@ -360,24 +355,28 @@ Resources:
   RestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: skiagendaApi
+      Name: skiagenda
 
   # create an authorizer that will control access to this API 
   # using the CognitoPool we created before
   RestApiAuthorizer:
     Type: 'AWS::ApiGateway::Authorizer'
+    DependsOn:
+      - "RestApi"
     Properties:
       ProviderARNs: 
         - !GetAtt UserPool.Arn
       AuthorizerResultTtlInSeconds: '300'
       Type: COGNITO_USER_POOLS
       IdentitySource: method.request.header.Auth
-      Name: skiagendaApiAuthorizer
+      Name: skiagenda
       RestApiId: !Ref RestApi
 
   # create a resource
   Resa:
     Type: 'AWS::ApiGateway::Resource'
+    DependsOn:
+      - "RestApi"
     Properties:
       RestApiId: !Ref RestApi
       ParentId: !GetAtt 
@@ -388,8 +387,14 @@ Resources:
   # then a method
   Method:
     Type: AWS::ApiGateway::Method
+    DependsOn:
+      - "Resa"
+      - "AddReservationFunction"
+      - "RestApiAuthorizer"
+      - "RestApi"
     Properties:
       HttpMethod: "POST"
+      # AuthorizationType: NONE
       AuthorizationType: COGNITO_USER_POOLS
       AuthorizerId: !Ref RestApiAuthorizer
       Integration:
@@ -405,11 +410,23 @@ Resources:
   GatewayDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
-      - Method
+      - "Method"
     Properties:
       RestApiId: !Ref RestApi
       StageName: prod
 
+  # grant the API gateway the right to invoke addReservationFunciton
+  InvokePermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !GetAtt "AddReservationFunction.Arn"
+      Principal: "apigateway.amazonaws.com"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/POST/resa"
+  
 Outputs:
-  URL:
-    Value: !GetAtt WebsiteBucket.WebsiteURL
+  websiteURL:
+    Value: !GetAtt Bucket.WebsiteURL
+#  apiURL:
+#    Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/${GatewayDeployment.StageName}"
+

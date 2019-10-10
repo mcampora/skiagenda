@@ -1,6 +1,111 @@
-<!-- root page -->
+<!doctype html>
 <html>
-    <body>
-        Hello World!
-    </body>
+<head>
+  <meta charset="UTF-8">
+  <title>Amazon Cognito Credenials Example</title>
+  <meta charset="utf-8">
+  <script src="js/jquery-3.1.0.js"></script>
+  <script src="js/amazon-cognito-identity.min.js"></script>
+  <script src="js/config.js"></script>
+</head>
+<body>
+  <div id="results">data</div>
+  <script type="application/javascript">
+    var results = document.getElementById("results");
+    
+    // setup
+    var poolData = {
+      UserPoolId : _config.cognito.userPoolId,
+      ClientId : _config.cognito.userPoolClientId
+    };
+    var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+    // register
+    function register(id, email, pwd, onSuccess, onFailure) {
+      var dataEmail = {
+        Name : 'email',
+        Value : email
+      };
+      var attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail);
+      userPool.signUp(id, pwd, [attributeEmail], null, 
+        function(err, result){
+          if (err) {
+            console.log("Error: " + err);
+            onFailure(err);
+          } else {
+            console.log("User is: " + result.user.getUsername());
+            onSuccess(result);
+          }
+        });
+    }
+
+    // confirm registration
+    function verify(id, code, onSuccess, onFailure) {
+      createCognitoUser(id).confirmRegistration(code, true, 
+        function(err, result) {
+          if (err) {
+            console.log(err);
+            return;
+          }
+          console.log('verify result: ' + result);
+        });
+    }
+
+    // signin
+    // ex. signin('mcm','Test#2019',function(){},function(){})
+    var accessToken = null;
+    function signin(id, pwd, onSuccess, onFailure) {
+        var authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails({
+            Username: id,
+            Password: pwd
+        });
+        var cognitoUser = createCognitoUser(id);
+        cognitoUser.authenticateUser(authenticationDetails, {
+            onSuccess: function(result) {
+              userPool.getCurrentUser().getSession(function(e,s){
+                accessToken = s.getIdToken().getJwtToken();
+              });
+              console.log(result);
+              onSuccess();
+            },
+            onFailure: function(err) {
+              console.log(err);
+              onFailure(err);
+            }
+        });
+    }
+
+    // helper
+    function createCognitoUser(email) {
+        return new AmazonCognitoIdentity.CognitoUser({
+            Username: email,
+            Pool: userPool
+        });
+    }
+
+    // ajax call to addReservation API/lambda
+    // ex. addReservation(accessToken,{resa:{begin:"b",end:"e"}},function(){},function(){})
+    function addReservation(token, resa, onSuccess, onFailure) {
+        $.ajax({
+            method: 'POST',
+            url: _config.api.invokeUrl + '/resa',
+            headers: {
+                Authorization: token
+            },
+            data: JSON.stringify(resa),
+            contentType: 'application/json',
+            success: function(result){
+              console.log(result);
+              onSuccess(result);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+              console.error('Error: ', textStatus, ', Details: ', errorThrown);
+              console.error('Response: ', jqXHR.responseText);
+              onFailure(jqXHR, textStatus, errorThrown);
+            }
+        });
+    }
+
+  </script>
+</body>
 </html>

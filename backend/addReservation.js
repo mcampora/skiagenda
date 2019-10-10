@@ -26,6 +26,8 @@ const test =
       "body": "{\"resa\":{\"begin\":47.6174755835663,\"end\":-122.28837066650185}}"
   }
 exports.handler = (event, context, callback) => {
+    console.log('Received event: ', event);
+
     // check we received a security context
     if (!event.requestContext.authorizer) {
       utils.errorResponse('Authorization not configured', context.awsRequestId, callback);
@@ -34,7 +36,7 @@ exports.handler = (event, context, callback) => {
 
     // Generate a random id for this reservation
     const resa = utils.toUrlString(randomBytes(16));
-    console.log('Received event (', resa, '): ', event);
+    console.log('generated id: ', resa);
 
     // Because we're using a Cognito User Pools authorizer, all of the claims
     // included in the authentication token are provided in the request context.
