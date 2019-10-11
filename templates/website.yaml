@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Creates a static website using S3
+Description: Creates a static website using S3, then a backend with API GW, Cognito, lambdas and DynamoDB
 
 # input parameters of the template
 Parameters:
@@ -7,24 +7,25 @@ Parameters:
     Type: String
     Description: The name for the bucket where all static resources have been uploaded before
     Default: skiagenda-source
+
   WebsiteBucketName:
     Type: String
     Description: The name for the bucket hosting your website
     Default: skiagenda
 
 Resources:
-
-  # S3 bucket containing the Web site content
+  # web site
   Bucket:
     Type: "AWS::S3::Bucket"
+    Description: S3 bucket containing the Web site content
     Properties:
       BucketName: !Ref WebsiteBucketName
       WebsiteConfiguration:
         IndexDocument: index.html
 
-  # access policy for the previous bucket
   BucketPolicy:
     Type: "AWS::S3::BucketPolicy"
+    Description: Access policy for the Web site bucket
     Properties:
       Bucket: !Ref Bucket
       PolicyDocument:
@@ -34,18 +35,18 @@ Resources:
             Action: "s3:GetObject"
             Resource: !Sub "arn:aws:s3:::${Bucket}/*"
   
-  # object triggering the invokation of the copy function
   TriggerCopy:
    Type: "Custom::S3Objects"
-   Properties:
-      ServiceToken: !GetAtt CopyS3ObjectsFunction.Arn
+   Description: object triggering the invokation of the copy function
+   Properties: 
+      ServiceToken: !GetAtt CopyFunction.Arn
       SourceBucket: !Ref SourceBucketName
-      SourcePrefix: !Sub "website/"
+      SourcePrefix: "website/"
       Bucket: !Ref Bucket
 
-  # the role and access rights the function will get
-  CopyS3ObjectsRole:
+  CopyRole:
     Type: AWS::IAM::Role
+    Description: the role and access rights the copy function will get
     Properties:
       Path: /
       AssumeRolePolicyDocument:
@@ -84,14 +85,14 @@ Resources:
                   - "s3:CopyObject"
                 Resource: "*"
 
-  # function used to copy content from one S3 bucket to another 
-  CopyS3ObjectsFunction:  
+  CopyFunction:  
     Type: AWS::Lambda::Function
+    Description: function used to copy content from one S3 bucket to another
     Properties:
       Description: Copies objects from a source S3 bucket to a destination
       Handler: index.handler
       Runtime: python2.7
-      Role: !GetAtt CopyS3ObjectsRole.Arn
+      Role: !GetAtt CopyRole.Arn
       Timeout: 60
       Code:
         ZipFile: |
@@ -139,9 +140,10 @@ Resources:
             client.delete_objects(Bucket=bucket, Delete={'Objects': objects})
             return cfnresponse.SUCCESS
 
-  # Cognito pool to register and authenticate users
+  # Cognito identity management
   UserPool:
     Type: AWS::Cognito::UserPool
+    Description: Cognito pool to register and authenticate users
     Properties:
       UserPoolName: skiagenda
       AliasAttributes:
@@ -149,27 +151,32 @@ Resources:
       AutoVerifiedAttributes:
         - email
 
-  # Cognito client app
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
+    Description: Cognito client app
     Properties:
       ClientName: skiagenda
       UserPoolId: !Ref UserPool
       GenerateSecret: false
 
-  # Invoke a custom function to patch the website cognito config file
+  # Config update
   TriggerUpdate:
     Type: "Custom::ConfigFile"
+    Description: "Invoke a custom function to patch the website cognito config file"
+    DependsOn:
+      - "Deployment"
+      - "TriggerCopy"
     Properties:
       ServiceToken: !GetAtt UpdateConfigFunction.Arn
       UserPool: !Ref UserPool
       Client: !Ref UserPoolClient
       Region: !Ref "AWS::Region"
+      Url: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
       Bucket: !Ref WebsiteBucketName
   
-  # Role used by the custom function to patch the website cognito config file
   UpdateConfigRole:
     Type: AWS::IAM::Role
+    Description: "Role used by the custom function to patch the website cognito config file"
     Properties:
       Path: /skiagenda/
       AssumeRolePolicyDocument:
@@ -208,11 +215,10 @@ Resources:
                 Resource:
                   - !Sub "arn:aws:s3:::${WebsiteBucketName}/*"
   
-  # the custom function used to patch the website cognito config file
   UpdateConfigFunction:
     Type: AWS::Lambda::Function
     Properties:
-      Description: ...
+      Description: "the custom function used to patch the website config file"
       Handler: index.handler
       Runtime: python2.7
       Role: !GetAtt UpdateConfigRole.Arn
@@ -222,38 +228,34 @@ Resources:
           import json
           import boto3
           import cfnresponse
-
           s3 = boto3.resource('s3')
-
           def create(properties, physical_id):
             userPoolId = properties['UserPool']
             clientId = properties['Client']
             region = properties['Region']
             bucket = properties['Bucket']
+            url = properties['Url']
             object = s3.Object(bucket, 'js/config.js')
             config_content = """
           var _config = {
-              cognito: {
-                  userPoolId: '%s', // e.g. us-east-2_uXboG5pAb
-                  userPoolClientId: '%s', // e.g. 25ddkmj4v6hfsfvruhpfi7n4hv
-                  region: '%s', // e.g. us-east-2
+              cognito: { 
+                  userPoolId: '%s', // patched
+                  userPoolClientId: '%s', 
+                  region: '%s', 
               },
               api: {
-                  invokeUrl: 'Base URL of your API including the stage', // e.g. https://rc7nyt4tql.execute-api.us-west-2.amazonaws.com/prod'
+                  invokeUrl: '%s',
               }
           };
               """
-            config_content = config_content % (userPoolId, clientId, region)
+            config_content = config_content % (userPoolId, clientId, region, url)
             config = s3.Object(bucket,'js/config.js')
             config.put(Body=config_content)
             return cfnresponse.SUCCESS, None
-
           def update(properties, physical_id):
             return create(properties, physical_id)
-
           def delete(properties, physical_id):
             return cfnresponse.SUCCESS, physical_id
-
           def handler(event, context):
             print "Received event: %s" % json.dumps(event)
             status = cfnresponse.FAILED
@@ -313,9 +315,10 @@ Resources:
         ReadCapacityUnits: "5"
         WriteCapacityUnits: "5"
 
-  # Role for backend lambda granting access to DynamoDB
+  # lambda functions
   BackendRole:
     Type: AWS::IAM::Role
+    Description: "Role for backend lambda granting access to DynamoDB"
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -337,9 +340,9 @@ Resources:
                   - "logs:PutLogEvents"
                 Resource: "*"
 
-  # the function used to insert a reservation for a given period
   AddReservationFunction:
     Type: AWS::Lambda::Function
+    Description: "The function used to insert a reservation for a given period"
     DependsOn:
       - "BackendRole"
     Properties:
@@ -351,16 +354,16 @@ Resources:
         S3Bucket: !Ref SourceBucketName
         S3Key: backend/functions.zip
 
-  # create a REST API that will expose our lambda functions
+  # API Gateway exposing our lambda functions
   RestApi:
     Type: AWS::ApiGateway::RestApi
+    Description: create a REST API that will expose our lambda functions
     Properties:
       Name: skiagenda
 
-  # create an authorizer that will control access to this API 
-  # using the CognitoPool we created before
   RestApiAuthorizer:
     Type: 'AWS::ApiGateway::Authorizer'
+    Description: "create an authorizer that will control access to this API using the CognitoPool we created before"
     DependsOn:
       - "RestApi"
     Properties:
@@ -372,9 +375,9 @@ Resources:
       Name: skiagenda
       RestApiId: !Ref RestApi
 
-  # create a resource
   Resa:
     Type: 'AWS::ApiGateway::Resource'
+    Description: "create a resource"
     DependsOn:
       - "RestApi"
     Properties:
@@ -384,9 +387,41 @@ Resources:
         - RootResourceId
       PathPart: resa
 
-  # then a method
+  OptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Description: Enable CORS on our resource
+    Properties:
+      AuthorizationType: NONE
+      RestApiId:
+        Ref: RestApi
+      ResourceId:
+        Ref: Resa
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+            method.response.header.Access-Control-Allow-Origin: "'*'"
+          ResponseTemplates:
+            application/json: ''
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+          method.response.header.Access-Control-Allow-Headers: false
+          method.response.header.Access-Control-Allow-Methods: false
+          method.response.header.Access-Control-Allow-Origin: false
+
   Method:
     Type: AWS::ApiGateway::Method
+    Description: "then a method"
     DependsOn:
       - "Resa"
       - "AddReservationFunction"
@@ -403,21 +438,38 @@ Resources:
         Uri: !Sub
           - "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations"
           - lambdaArn: !GetAtt "AddReservationFunction.Arn"
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: $input.json('$')
+            ResponseParameters:
+                method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                method.response.header.Access-Control-Allow-Origin: "'*'"
+        PassthroughBehavior: NEVER
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+      MethodResponses:
+        - ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+          StatusCode: '200'
       ResourceId: !Ref Resa
       RestApiId: !Ref RestApi
 
-  # then a deployemt & stage
-  GatewayDeployment:
+  Deployment:
     Type: AWS::ApiGateway::Deployment
+    Description: "then a deployemt & stage"
     DependsOn:
       - "Method"
     Properties:
       RestApiId: !Ref RestApi
       StageName: prod
 
-  # grant the API gateway the right to invoke addReservationFunciton
   InvokePermission:
     Type: "AWS::Lambda::Permission"
+    Description: "grant the API gateway the right to invoke addReservationFunction"
     Properties:
       Action: "lambda:InvokeFunction"
       FunctionName: !GetAtt "AddReservationFunction.Arn"
@@ -427,6 +479,6 @@ Resources:
 Outputs:
   websiteURL:
     Value: !GetAtt Bucket.WebsiteURL
-#  apiURL:
-#    Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/${GatewayDeployment.StageName}"
+  apiURL:
+    Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/prod/resa"
 
