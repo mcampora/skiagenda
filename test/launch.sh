@@ -1,0 +1,3 @@
+npm install aws-sdk
+npm install amazon-cognito-identity-js
+...

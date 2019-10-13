@@ -415,11 +415,11 @@ Resources:
         ResponseModels:
           application/json: 'Empty'
         ResponseParameters:
-          method.response.header.Access-Control-Allow-Headers: false
-          method.response.header.Access-Control-Allow-Methods: false
-          method.response.header.Access-Control-Allow-Origin: false
+          method.response.header.Access-Control-Allow-Headers: true
+          method.response.header.Access-Control-Allow-Methods: true
+          method.response.header.Access-Control-Allow-Origin: true
 
-  Method:
+  PostMethod:
     Type: AWS::ApiGateway::Method
     Description: "then a method"
     DependsOn:
@@ -441,14 +441,14 @@ Resources:
         IntegrationResponses:
           - StatusCode: 200
             ResponseTemplates:
-              application/json: $input.json('$')
+              application/json: ''
             ResponseParameters:
                 method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
                 method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
                 method.response.header.Access-Control-Allow-Origin: "'*'"
-        PassthroughBehavior: NEVER
+        #PassthroughBehavior: NEVER
         RequestTemplates:
-          application/json: '{"statusCode": 200}'
+          application/json: ''
       MethodResponses:
         - ResponseParameters:
             method.response.header.Access-Control-Allow-Headers: true
@@ -462,7 +462,8 @@ Resources:
     Type: AWS::ApiGateway::Deployment
     Description: "then a deployemt & stage"
     DependsOn:
-      - "Method"
+      - "PostMethod"
+      - "OptionsMethod"
     Properties:
       RestApiId: !Ref RestApi
       StageName: prod
