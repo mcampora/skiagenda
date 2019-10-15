@@ -1,6 +1,6 @@
 // API object
 var userPool = null
-function getUserPool() {
+function _getUserPool() {
     if (userPool == null) {
         var poolData = {
             UserPoolId : _config.cognito.userPoolId,
@@ -13,28 +13,27 @@ function getUserPool() {
 
 // register
 var user = null;
-function register(id, email, pwd, next=function(){}) {
-    var dataEmail = {
-        Name : 'email',
-        Value : email
-    }
+function _register(id, email, pwd, onSuccess=function(){}, onFailure=function(){}) {
+    var dataEmail = { Name : 'email', Value : email }
     var attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail)
-    getUserPool().signUp(id, pwd, [attributeEmail], null, function(err, result){
+    console.log("register() ->")
+    _getUserPool().signUp(id, pwd, [attributeEmail], null, function(err, result){
         if (err) {
-            console.log("register() ->")
             console.log(err)
-        } else {
+            onFailure(err)
+        }
+        else { 
             user = result.user
-            console.log("register() ->")
             console.log(result.user)
-            next()
+            onSuccess(result)
         }
     })
 }
+var register = (id, email, pwd) => { return new Promise(resolve => _register(id, email, pwd, resolve))}
 
 // confirm registration
-function verify(id, code, next=function(){}) {
-    createCognitoUser(id).confirmRegistration(code, true, function(err, result) {
+function _verify(id, code, next=function(){}) {
+    _createCognitoUser(id).confirmRegistration(code, true, function(err, result) {
         console.log('adminConfirm() ->')
         if (err) {
             console.log(err)
@@ -48,16 +47,16 @@ function verify(id, code, next=function(){}) {
 // signin
 // ex. signin('mcm','Test#2019')
 var accessToken = null;
-function signin(id, pwd, next=function(){}) {
+function _signin(id, pwd, next=function(){}) {
     var authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails({
         Username: id,
         Password: pwd
     })
-    var cognitoUser = createCognitoUser(id)
+    var cognitoUser = _createCognitoUser(id)
     console.log("signin() ->")
     cognitoUser.authenticateUser(authenticationDetails, {
         onSuccess: function(result) {
-            getUserPool().getCurrentUser().getSession(function(e,s){
+            _getUserPool().getCurrentUser().getSession(function(e,s){
                 accessToken = s.getIdToken().getJwtToken()
                 console.log(result)
                 next()
@@ -68,11 +67,12 @@ function signin(id, pwd, next=function(){}) {
         }
     })
 }
+var signin = (id, pwd) => { return new Promise(resolve => _signin(id, pwd, resolve))}
 
 // helper function
-function createCognitoUser(email) {
+function _createCognitoUser(email) {
     return new AmazonCognitoIdentity.CognitoUser({
         Username: email,
-        Pool: getUserPool()
+        Pool: _getUserPool()
     })
 }

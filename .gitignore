@@ -1,3 +1,5 @@
 backend/functions.zip
 test/package-lock.json
 test/node_modules
+test/localconfig.js
+test/promises.js

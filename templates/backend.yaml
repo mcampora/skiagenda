@@ -1,0 +1,421 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Creates a static website using S3, then a backend with API GW, Cognito, lambdas and DynamoDB
+
+# input parameters of the template
+Parameters:
+  SourceBucketName:
+    Type: String
+    Description: The name for the bucket where all static resources have been uploaded before
+    Default: skiagenda-source
+
+  WebsiteBucketName:
+    Type: String
+    Description: The name for the bucket hosting your website
+    Default: skiagenda
+
+Resources:
+  # Cognito identity management
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Description: Cognito pool to register and authenticate users
+    Properties:
+      UserPoolName: skiagenda
+      AliasAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Description: Cognito client app
+    Properties:
+      ClientName: skiagenda
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false
+
+  # Config update
+  TriggerUpdate:
+    Type: "Custom::ConfigFile"
+    Description: "Invoke a custom function to patch the website cognito config file"
+    DependsOn:
+      - "Deployment"
+    Properties:
+      ServiceToken: !GetAtt UpdateConfigFunction.Arn
+      UserPool: !Ref UserPool
+      Client: !Ref UserPoolClient
+      Region: !Ref "AWS::Region"
+      Url: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
+      Bucket: !Ref WebsiteBucketName
+  
+  UpdateConfigRole:
+    Type: AWS::IAM::Role
+    Description: "Role used by the custom function to patch the website cognito config file"
+    Properties:
+      Path: /skiagenda/
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: UpdateConfigRole
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Sid: Logging
+                Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: "*"
+              - Sid: Cognito
+                Effect: Allow
+                Action:
+                  - "cognito-idp:CreateUserPool"
+                  - "cognito-idp:DeleteUserPool"
+                  - "cognito-idp:CreateUserPoolClient"
+                  - "cognito-idp:DeleteUserPoolClient"
+                Resource: "*"
+              - Sid: ConfigBucketWriteAccess
+                Effect: Allow
+                Action:
+                  - "s3:PutObject"
+                  - "s3:PutObjectAcl"
+                  - "s3:PutObjectVersionAcl"
+                Resource:
+                  - !Sub "arn:aws:s3:::${WebsiteBucketName}/*"
+  
+  UpdateConfigFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: "the custom function used to patch the website config file"
+      Handler: index.handler
+      Runtime: python2.7
+      Role: !GetAtt UpdateConfigRole.Arn
+      Timeout: 60
+      Code:
+        ZipFile: |
+          import json
+          import boto3
+          import cfnresponse
+          s3 = boto3.resource('s3')
+          def create(properties, physical_id):
+            userPoolId = properties['UserPool']
+            clientId = properties['Client']
+            region = properties['Region']
+            bucket = properties['Bucket']
+            url = properties['Url']
+            object = s3.Object(bucket, 'js/config.js')
+            config_content = """
+          var _config = {
+              cognito: { 
+                  userPoolId: '%s', // patched
+                  userPoolClientId: '%s', 
+                  region: '%s', 
+              },
+              api: {
+                  invokeUrl: '%s',
+              }
+          };
+              """
+            config_content = config_content % (userPoolId, clientId, region, url)
+            config = s3.Object(bucket,'js/config.js')
+            config.put(Body=config_content)
+            return cfnresponse.SUCCESS, None
+          def update(properties, physical_id):
+            return create(properties, physical_id)
+          def delete(properties, physical_id):
+            return cfnresponse.SUCCESS, physical_id
+          def handler(event, context):
+            print "Received event: %s" % json.dumps(event)
+            status = cfnresponse.FAILED
+            new_physical_id = None
+            try:
+              properties = event.get('ResourceProperties')
+              physical_id = event.get('PhysicalResourceId')
+              status, new_physical_id = {
+                'Create': create,
+                'Update': update,
+                'Delete': delete
+              }.get(event['RequestType'], lambda x, y: (cfnresponse.FAILED, None))(properties, physical_id)
+            except Exception as e:
+              print "Exception: %s" % e
+              status = cfnresponse.FAILED
+            finally:
+              cfnresponse.send(event, context, status, {}, new_physical_id)
+  
+  # DynamoDB tables
+  Reservations:
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      TableName: "Reservations"
+      AttributeDefinitions: 
+        - AttributeName: "resaid"
+          AttributeType: "S"
+      KeySchema: 
+        - AttributeName: "resaid"
+          KeyType: "HASH"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+  Users:
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      TableName: "Users"
+      AttributeDefinitions: 
+        - AttributeName: "userid"
+          AttributeType: "S"
+      KeySchema: 
+        - AttributeName: "userid"
+          KeyType: "HASH"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+  Holidays:
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      TableName: "Holidays"
+      AttributeDefinitions: 
+        - AttributeName: "name"
+          AttributeType: "S"
+      KeySchema: 
+        - AttributeName: "name"
+          KeyType: "HASH"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+
+  # lambda functions
+  BackendRole:
+    Type: AWS::IAM::Role
+    Description: "Role for backend lambda granting access to DynamoDB"
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 
+                - lambda.amazonaws.com
+            Action: 
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: DynamoDBWriteAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - dynamodb:PutItem
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: "*"
+
+  AddReservationFunction:
+    Type: AWS::Lambda::Function
+    Description: "The function used to insert a reservation for a given period"
+    DependsOn:
+      - "BackendRole"
+    Properties:
+      Handler: addReservation.handler
+      Runtime: nodejs8.10
+      Role: !GetAtt BackendRole.Arn
+      Timeout: 60
+      Code:
+        S3Bucket: !Ref SourceBucketName
+        S3Key: backend/functions.zip
+
+  ListReservationsFunction:
+    Type: AWS::Lambda::Function
+    Description: "The function used to list reservations over 3 months"
+    DependsOn:
+      - "BackendRole"
+    Properties:
+      Handler: listReservations.handler
+      Runtime: nodejs8.10
+      Role: !GetAtt BackendRole.Arn
+      Timeout: 60
+      Code:
+        S3Bucket: !Ref SourceBucketName
+        S3Key: backend/functions.zip
+        
+  # API Gateway exposing our lambda functions
+  RestApi:
+    Type: AWS::ApiGateway::RestApi
+    Description: create a REST API that will expose our lambda functions
+    Properties:
+      Name: skiagenda
+
+  RestApiAuthorizer:
+    Type: 'AWS::ApiGateway::Authorizer'
+    Description: "create an authorizer that will control access to this API using the CognitoPool we created before"
+    DependsOn:
+      - "RestApi"
+      - "UserPool"
+    Properties:
+      ProviderARNs: 
+        - !GetAtt UserPool.Arn
+      AuthorizerResultTtlInSeconds: '300'
+      Type: COGNITO_USER_POOLS
+      IdentitySource: method.request.header.Authorization
+      Name: skiagenda
+      RestApiId: !Ref RestApi
+
+  Resa:
+    Type: 'AWS::ApiGateway::Resource'
+    Description: "create a resource"
+    DependsOn:
+      - "RestApi"
+      - "RestApiAuthorizer"
+    Properties:
+      RestApiId: !Ref RestApi
+      ParentId: !GetAtt 
+        - RestApi
+        - RootResourceId
+      PathPart: resa
+
+  OptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Description: Enable CORS on our resource
+    Properties:
+      AuthorizationType: NONE
+      RestApiId:
+        Ref: RestApi
+      ResourceId:
+        Ref: Resa
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            method.response.header.Access-Control-Allow-Methods: "'GET,POST,OPTIONS'"
+            method.response.header.Access-Control-Allow-Origin: "'*'"
+          ResponseTemplates:
+            application/json: ''
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+          method.response.header.Access-Control-Allow-Headers: true
+          method.response.header.Access-Control-Allow-Methods: true
+          method.response.header.Access-Control-Allow-Origin: true
+
+  PostMethod:
+    Type: AWS::ApiGateway::Method
+    Description: "then a method"
+    DependsOn:
+      - "Resa"
+      - "AddReservationFunction"
+      - "RestApiAuthorizer"
+      - "RestApi"
+    Properties:
+      HttpMethod: "POST"
+      # AuthorizationType: NONE
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref RestApiAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub
+          - "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations"
+          - lambdaArn: !GetAtt "AddReservationFunction.Arn"
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: ''
+            ResponseParameters:
+                method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                method.response.header.Access-Control-Allow-Methods: "'GET,POST,OPTIONS'"
+                method.response.header.Access-Control-Allow-Origin: "'*'"
+        #PassthroughBehavior: NEVER
+        RequestTemplates:
+          application/json: ''
+      MethodResponses:
+        - ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+          StatusCode: '200'
+      ResourceId: !Ref Resa
+      RestApiId: !Ref RestApi
+
+  GetMethod:
+    Type: AWS::ApiGateway::Method
+    Description: "then a method"
+    DependsOn:
+      - "Resa"
+      - "ListReservationsFunction"
+      - "RestApiAuthorizer"
+      - "RestApi"
+    Properties:
+      HttpMethod: "GET"
+      # AuthorizationType: NONE
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref RestApiAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub
+          - "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations"
+          - lambdaArn: !GetAtt "ListReservationsFunction.Arn"
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: ''
+            ResponseParameters:
+                method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                method.response.header.Access-Control-Allow-Methods: "'GET,POST,OPTIONS'"
+                method.response.header.Access-Control-Allow-Origin: "'*'"
+        #PassthroughBehavior: NEVER
+        RequestTemplates:
+          application/json: ''
+      MethodResponses:
+        - ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+          StatusCode: '200'
+      ResourceId: !Ref Resa
+      RestApiId: !Ref RestApi
+
+  Deployment:
+    Type: AWS::ApiGateway::Deployment
+    Description: "then a deployemt & stage"
+    DependsOn:
+      - "GetMethod"
+      - "PostMethod"
+      - "OptionsMethod"
+    Properties:
+      RestApiId: !Ref RestApi
+      StageName: prod
+
+  InvokeGetPermission:
+    Type: "AWS::Lambda::Permission"
+    Description: "grant the API gateway the right to invoke listReservationsFunction"
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !GetAtt "ListReservationsFunction.Arn"
+      Principal: "apigateway.amazonaws.com"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/POST/resa"
+  
+  InvokePostPermission:
+    Type: "AWS::Lambda::Permission"
+    Description: "grant the API gateway the right to invoke addReservationFunction"
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !GetAtt "AddReservationFunction.Arn"
+      Principal: "apigateway.amazonaws.com"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/POST/resa"
+
+Outputs:
+  apiURL:
+    Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/prod/resa"
+

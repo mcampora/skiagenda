@@ -1,35 +1,21 @@
 const AWS = require('aws-sdk');
 const ddb = new AWS.DynamoDB.DocumentClient();
-const randomBytes = require('crypto').randomBytes;
+const utils = require('utils.js');
 
-const fleet = [
-    {   Name: 'Bucephalus',
-        Color: 'Golden',
-        Gender: 'Male',
-    },
-    {   Name: 'Shadowfax',
-        Color: 'White',
-        Gender: 'Male',
-    },
-    {   Name: 'Rocinante',
-        Color: 'Yellow',
-        Gender: 'Female',
-    },
-];
-
+// return the content of the reservation table
+//  limit the result to the selected month
+// plus and minus one month 
+//  by default use current month
+// expects:
+//    body:{month:'12'}
 exports.handler = (event, context, callback) => {
+    console.log('Received event: ', event);
+
+    // check we received a security context
     if (!event.requestContext.authorizer) {
-      errorResponse('Authorization not configured', context.awsRequestId, callback);
+      utils.errorResponse('Authorization not configured', context.awsRequestId, callback);
       return;
     }
-
-    // early exit at this stage
-    errorResponse('Temporary exit', context.awsRequestId, callback);
-    return;
-
-
-    const rideId = toUrlString(randomBytes(16));
-    console.log('Received event (', rideId, '): ', event);
 
     // Because we're using a Cognito User Pools authorizer, all of the claims
     // included in the authentication token are provided in the request context.
@@ -42,9 +28,8 @@ exports.handler = (event, context, callback) => {
     // header first and use a different parsing strategy based on that value.
     const requestBody = JSON.parse(event.body);
 
-    const pickupLocation = requestBody.PickupLocation;
-    const unicorn = findUnicorn(pickupLocation);
-    recordRide(rideId, username, unicorn).then(() => {
+    const month = requestBody.month;
+    listRecords(month).then((data) => {
         // You can use the callback function to provide a return value from your Node.js
         // Lambda functions. The first parameter is used for failed invocations. The
         // second parameter specifies the result data of the invocation.
@@ -54,11 +39,7 @@ exports.handler = (event, context, callback) => {
         callback(null, {
             statusCode: 201,
             body: JSON.stringify({
-                RideId: rideId,
-                Unicorn: unicorn,
-                UnicornName: unicorn.Name,
-                Eta: '30 seconds',
-                Rider: username,
+                Reservations: data
             }),
             headers: {
                 'Access-Control-Allow-Origin': '*',
@@ -71,47 +52,10 @@ exports.handler = (event, context, callback) => {
         // from the Lambda function successfully. Specify a 500 HTTP status
         // code and provide an error message in the body. This will provide a
         // more meaningful error response to the end client.
-        errorResponse(err.message, context.awsRequestId, callback)
+        utils.errorResponse(err.message, context.awsRequestId, callback)
     });
 };
 
-// This is where you would implement logic to find the optimal unicorn for
-// this ride (possibly invoking another Lambda function as a microservice.)
-// For simplicity, we'll just pick a unicorn at random.
-function findUnicorn(pickupLocation) {
-    console.log('Finding unicorn for ', pickupLocation.Latitude, ', ', pickupLocation.Longitude);
-    return fleet[Math.floor(Math.random() * fleet.length)];
-}
-
-function recordRide(rideId, username, unicorn) {
-    return ddb.put({
-        TableName: 'Rides',
-        Item: {
-            RideId: rideId,
-            User: username,
-            Unicorn: unicorn,
-            UnicornName: unicorn.Name,
-            RequestTime: new Date().toISOString(),
-        },
-    }).promise();
-}
-
-function toUrlString(buffer) {
-    return buffer.toString('base64')
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=/g, '');
-}
-
-function errorResponse(errorMessage, awsRequestId, callback) {
-  callback(null, {
-    statusCode: 500,
-    body: JSON.stringify({
-      Error: errorMessage,
-      Reference: awsRequestId,
-    }),
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-    },
-  });
+function listRecords(month) {
+    return ddb.query({TableName : "Reservations"}).promise();
 }
