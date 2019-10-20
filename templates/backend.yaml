@@ -207,7 +207,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action: 
-                  - dynamodb:PutItem
+                  - dynamodb:*
                   - "logs:CreateLogGroup"
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
@@ -220,7 +220,7 @@ Resources:
       - "BackendRole"
     Properties:
       Handler: addReservation.handler
-      Runtime: nodejs8.10
+      Runtime: nodejs10.x
       Role: !GetAtt BackendRole.Arn
       Timeout: 60
       Code:
@@ -234,7 +234,35 @@ Resources:
       - "BackendRole"
     Properties:
       Handler: listReservations.handler
-      Runtime: nodejs8.10
+      Runtime: nodejs10.x
+      Role: !GetAtt BackendRole.Arn
+      Timeout: 60
+      Code:
+        S3Bucket: !Ref SourceBucketName
+        S3Key: backend/functions.zip
+        
+  DeleteReservationFunction:
+    Type: AWS::Lambda::Function
+    Description: "The function used to delete a particular reservations"
+    DependsOn:
+      - "BackendRole"
+    Properties:
+      Handler: deleteReservation.handler
+      Runtime: nodejs10.x
+      Role: !GetAtt BackendRole.Arn
+      Timeout: 60
+      Code:
+        S3Bucket: !Ref SourceBucketName
+        S3Key: backend/functions.zip
+
+  UpdateReservationFunction:
+    Type: AWS::Lambda::Function
+    Description: "The function used to update a particular reservations"
+    DependsOn:
+      - "BackendRole"
+    Properties:
+      Handler: updateReservation.handler
+      Runtime: nodejs10.x
       Role: !GetAtt BackendRole.Arn
       Timeout: 60
       Code:
@@ -280,25 +308,23 @@ Resources:
     Type: AWS::ApiGateway::Method
     Description: Enable CORS on our resource
     Properties:
+      ResourceId: !Ref Resa
+      RestApiId: !Ref RestApi
       AuthorizationType: NONE
-      RestApiId:
-        Ref: RestApi
-      ResourceId:
-        Ref: Resa
       HttpMethod: OPTIONS
       Integration:
+        Type: MOCK
         IntegrationResponses:
-        - StatusCode: 200
-          ResponseParameters:
-            method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-            method.response.header.Access-Control-Allow-Methods: "'GET,POST,OPTIONS'"
-            method.response.header.Access-Control-Allow-Origin: "'*'"
-          ResponseTemplates:
-            application/json: ''
-        PassthroughBehavior: WHEN_NO_MATCH
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: ''
+        PassthroughBehavior: NEVER
         RequestTemplates:
           application/json: '{"statusCode": 200}'
-        Type: MOCK
       MethodResponses:
       - StatusCode: 200
         ResponseModels:
@@ -318,7 +344,6 @@ Resources:
       - "RestApi"
     Properties:
       HttpMethod: "POST"
-      # AuthorizationType: NONE
       AuthorizationType: COGNITO_USER_POOLS
       AuthorizerId: !Ref RestApiAuthorizer
       Integration:
@@ -333,9 +358,8 @@ Resources:
               application/json: ''
             ResponseParameters:
                 method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-                method.response.header.Access-Control-Allow-Methods: "'GET,POST,OPTIONS'"
+                method.response.header.Access-Control-Allow-Methods: "'GET,POST,OPTIONS,PUT,DELETE'"
                 method.response.header.Access-Control-Allow-Origin: "'*'"
-        #PassthroughBehavior: NEVER
         RequestTemplates:
           application/json: ''
       MethodResponses:
@@ -357,7 +381,6 @@ Resources:
       - "RestApi"
     Properties:
       HttpMethod: "GET"
-      # AuthorizationType: NONE
       AuthorizationType: COGNITO_USER_POOLS
       AuthorizerId: !Ref RestApiAuthorizer
       Integration:
@@ -372,9 +395,82 @@ Resources:
               application/json: ''
             ResponseParameters:
                 method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-                method.response.header.Access-Control-Allow-Methods: "'GET,POST,OPTIONS'"
+                method.response.header.Access-Control-Allow-Methods: "'GET,POST,OPTIONS,PUT,DELETE'"
                 method.response.header.Access-Control-Allow-Origin: "'*'"
         #PassthroughBehavior: NEVER
+        RequestTemplates:
+          application/json: ''
+      MethodResponses:
+        - ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+          StatusCode: '200'
+      ResourceId: !Ref Resa
+      RestApiId: !Ref RestApi
+
+  UpdateMethod:
+    Type: AWS::ApiGateway::Method
+    Description: "then a method"
+    DependsOn:
+      - "Resa"
+      - "UpdateReservationFunction"
+      - "RestApiAuthorizer"
+    Properties:
+      HttpMethod: "PUT"
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref RestApiAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub
+          - "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations"
+          - lambdaArn: !GetAtt "UpdateReservationFunction.Arn"
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: ''
+            ResponseParameters:
+                method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                method.response.header.Access-Control-Allow-Methods: "'GET,POST,OPTIONS,PUT,DELETE'"
+                method.response.header.Access-Control-Allow-Origin: "'*'"
+        #PassthroughBehavior: NEVER
+        RequestTemplates:
+          application/json: ''
+      MethodResponses:
+        - ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+          StatusCode: '200'
+      ResourceId: !Ref Resa
+      RestApiId: !Ref RestApi
+
+  DeleteMethod:
+    Type: AWS::ApiGateway::Method
+    Description: "then a method"
+    DependsOn:
+      - "Resa"
+      - "DeleteReservationFunction"
+      - "RestApiAuthorizer"
+    Properties:
+      HttpMethod: "DELETE"
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref RestApiAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub
+          - "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations"
+          - lambdaArn: !GetAtt "DeleteReservationFunction.Arn"
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: ''
+            ResponseParameters:
+                method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                method.response.header.Access-Control-Allow-Methods: "'GET,POST,OPTIONS,PUT,DELETE'"
+                method.response.header.Access-Control-Allow-Origin: "'*'"
         RequestTemplates:
           application/json: ''
       MethodResponses:
@@ -393,6 +489,8 @@ Resources:
       - "GetMethod"
       - "PostMethod"
       - "OptionsMethod"
+      - "DeleteMethod"
+      - "UpdateMethod"
     Properties:
       RestApiId: !Ref RestApi
       StageName: prod
@@ -400,22 +498,47 @@ Resources:
   InvokeGetPermission:
     Type: "AWS::Lambda::Permission"
     Description: "grant the API gateway the right to invoke listReservationsFunction"
+    DependsOn:
+      - "GetMethod"
     Properties:
       Action: "lambda:InvokeFunction"
       FunctionName: !GetAtt "ListReservationsFunction.Arn"
       Principal: "apigateway.amazonaws.com"
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/POST/resa"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/GET/resa"
   
   InvokePostPermission:
     Type: "AWS::Lambda::Permission"
     Description: "grant the API gateway the right to invoke addReservationFunction"
+    DependsOn:
+      - "PostMethod"
     Properties:
       Action: "lambda:InvokeFunction"
       FunctionName: !GetAtt "AddReservationFunction.Arn"
       Principal: "apigateway.amazonaws.com"
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/POST/resa"
 
+  InvokePutPermission:
+    Type: "AWS::Lambda::Permission"
+    Description: "grant the API gateway the right to invoke updateReservationFunction"
+    DependsOn:
+      - "UpdateMethod"
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !GetAtt "UpdateReservationFunction.Arn"
+      Principal: "apigateway.amazonaws.com"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/PUT/resa"
+
+  InvokeDeletePermission:
+    Type: "AWS::Lambda::Permission"
+    Description: "grant the API gateway the right to invoke deleteReservationFunction"
+    DependsOn:
+      - "DeleteMethod"
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !GetAtt "DeleteReservationFunction.Arn"
+      Principal: "apigateway.amazonaws.com"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/DELETE/resa"
+
 Outputs:
   apiURL:
     Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/prod/resa"
-

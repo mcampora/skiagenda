@@ -4,7 +4,7 @@
 * architecture
     * fully deployed on AWS, will use:
     * S3 for the Web content
-    * AuroraDB as persistent layer
+    * DynamoDB as persistent layer
     * Cognito to identiy users and associate reservations
     * Lambda to process user requests
     * Cloudformation to automate setup
