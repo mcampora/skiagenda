@@ -16,15 +16,15 @@ var user = null;
 function _register(id, email, pwd, onSuccess=function(){}, onFailure=function(){}) {
     var dataEmail = { Name : 'email', Value : email }
     var attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail)
-    console.log("register() ->")
+    //console.log("register() ->")
     _getUserPool().signUp(id, pwd, [attributeEmail], null, function(err, result){
         if (err) {
-            console.log(err)
+            //console.log(err)
             onFailure(err)
         }
         else { 
             user = result.user
-            console.log(result.user)
+            //console.log(result.user)
             onSuccess(result)
         }
     })
@@ -34,11 +34,11 @@ var register = (id, email, pwd) => { return new Promise(resolve => _register(id,
 // confirm registration
 function _verify(id, code, next=function(){}) {
     _createCognitoUser(id).confirmRegistration(code, true, function(err, result) {
-        console.log('adminConfirm() ->')
+        //console.log('adminConfirm() ->')
         if (err) {
-            console.log(err)
+            //console.log(err)
         } else {
-            console.log(result)
+            //console.log(result)
             next()
         }
     })
@@ -53,17 +53,17 @@ function _signin(id, pwd, next=function(){}) {
         Password: pwd
     })
     var cognitoUser = _createCognitoUser(id)
-    console.log("signin() ->")
+    //console.log("signin() ->")
     cognitoUser.authenticateUser(authenticationDetails, {
         onSuccess: function(result) {
             _getUserPool().getCurrentUser().getSession(function(e,s){
                 accessToken = s.getIdToken().getJwtToken()
-                console.log(result)
+                //console.log(result)
                 next()
             });
         },
         onFailure: function(err) {
-            console.log(err)
+            //console.log(err)
         }
     })
 }

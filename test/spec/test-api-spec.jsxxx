@@ -1,0 +1,166 @@
+// import the various sdks
+const AmazonCognitoIdentity = require('amazon-cognito-identity-js')
+global.fetch = require('node-fetch');
+const fs = require('fs')
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
+const { window } = new JSDOM();
+const { document } = (new JSDOM('')).window;
+global.document = document;
+const $ = jQuery = require('jquery')(window);
+const aws = require('aws-sdk');
+const https = require('http')
+
+// import the application files
+eval(fs.readFileSync('../website/js/authent.js').toString())
+eval(fs.readFileSync('../website/js/resa.js').toString())
+
+//
+// the test suite
+//
+describe("Test user management", function() {
+
+    it("check we have a proper config", function() {
+      return getConfig().then(() => {
+        expect(_config).not.toBe(null)
+        expect(_config.api.invokeUrl).not.toBe(null)
+      })
+    })
+
+    it("check that test user has been properly cleaned up", function() {
+      return cleanupUser('mcm').then(() => {
+        expect(true).toBe(true)
+      })
+    })
+
+    it("check that the user has been properly registered", function() {
+      return register('mcm','success@simulator.amazonses.com','Test#2019').then((d) => {
+        expect(d).not.toBe(null)
+        expect(d.user.username).toBe('mcm')
+      })
+    })
+
+    it("check that the user is verified", function() {
+      return confirmUser('mcm').then((d) => {
+        expect(true).toBe(true)
+      })
+    })
+
+    it("check signin is succesful", function() {
+      return signin('mcm','Test#2019').then((d) => {
+        expect(accessToken).not.toBe(null)
+      })
+    })
+
+    var gresaid = null
+    it("check creation of a basic reservation", function() {
+      const firstday = '1'
+      const lastday = '2' 
+      return addReservation(accessToken,{resa:{firstday:firstday,lastday:lastday}}).then((d) => {
+        expect(d.resaid).not.toBe(null)
+        expect(d.resaowner).toBe('mcm')
+        expect(d.firstday).toBe(firstday)
+        expect(d.lastday).toBe(lastday)
+        // save the resaid
+        gresaid = d.resaid
+      })
+    })
+
+    var nbresa = 0
+    it("check retrieve of a list of reservations", function() {
+      return listReservations(accessToken,{month:'11'}).then((d) => {
+        expect(d.Reservations.Items.length).toBeGreaterThan(0)
+        nbresa = d.Reservations.Items.length
+      })
+    })
+
+    it("check reservation update", function() {
+      const firstday = '2'
+      const lastday = '3' 
+      return updateReservation(accessToken,{resa:{resaid:gresaid,firstday:firstday,lastday:lastday}}).then((d) => {
+        //console.log(d)
+        expect(d.resaid).toBe(gresaid)
+        expect(d.resaowner).toBe('mcm')
+        expect(d.firstday).toBe(firstday)
+        expect(d.lastday).toBe(lastday)
+      })
+    })
+
+    it("check delete reservation", function() {
+      return deleteReservation(accessToken,{resa:{resaid:gresaid}}).then((d) => {
+        //console.log(d)
+        expect(d.resaid).toBe(gresaid)
+        expect(d.resaowner).toBe('mcm')
+        listReservations(accessToken,{month:'11'}).then((d) => {
+          expect(d.Reservations.Items.length).toBeLowerThan(nbresa)
+        })
+      })
+    })
+})
+
+// define local helpers
+var CognitoIdentityServiceProvider = aws.CognitoIdentityServiceProvider;
+var client = new CognitoIdentityServiceProvider({ apiVersion: '2016-04-19', region: 'us-east-1' });
+function _cleanupUser(id, next) {
+    //console.log('cleanupUser(' + id + ') ->')
+    var params = { Username: id, UserPoolId: _getUserPool().userPoolId }
+    client.adminDeleteUser(params,function(err,data){
+        if (err) { 
+            //console.log(err)
+            next(err)
+        }
+        else {
+            //console.log(data)
+            next(data)
+        }
+    })
+}
+var cleanupUser = id => { return new Promise((resolve) => _cleanupUser(id, resolve)) }
+
+function _confirmUser(id, next) {
+    var params = { Username: id, UserPoolId: _getUserPool().userPoolId }
+    //console.log('confirmUser(' + id + ') ->')
+    client.adminConfirmSignUp(params, function(err,data) {
+        if (err) {
+            //console.log(err, err.stack)
+            next(err)
+        }
+        else {
+            //console.log(data)
+            next(data)
+        }
+    })
+}
+var confirmUser = id => { return new Promise(resolve => _confirmUser(id, resolve)) }
+
+// download the modified config file to know the endpoints
+function _getConfig(onSuccess,onFailure) {
+    if (fs.existsSync('localconfig.js')) {
+        fs.readFile('localconfig.js',
+            // callback function that is called when reading file is done
+            function(err, data) { 
+                if (err) throw err;
+                // data is a buffer containing file content
+                (0,eval)(data.toString('utf8'))
+                onSuccess() 
+            }
+        )
+    }
+    else {
+        const options = {
+            hostname: 'skiagenda.s3-website-us-east-1.amazonaws.com',
+            path: '/js/config.js',
+        }
+        const req = https.request(options, res => {
+            res.on('data', d => { 
+                (0,eval)(d.toString())
+                fs.writeFile('localconfig.js', d.toString(), ()=>{})
+                onSuccess() 
+            })
+        })
+        req.on('error', error => { onFailure(error) })
+        req.end()
+    }
+}
+var getConfig = () => { return new Promise((onfullfilled,onFailure) => _getConfig(onfullfilled,onFailure)) }
+

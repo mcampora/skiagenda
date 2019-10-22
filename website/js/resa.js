@@ -1,8 +1,8 @@
 // ajax help[er for reservation APIs/lambdas
 function _reservation(token, name, method, params, onSuccess=function(){}, onFailure=function(){}) {
-    console.log(name + ' ->')
-    console.log(token)
-    console.log(params)
+    //console.log(name + ' ->')
+    //console.log(token)
+    //console.log(params)
     //console.log(params)
     $.ajax({
         method: method,
@@ -13,12 +13,12 @@ function _reservation(token, name, method, params, onSuccess=function(){}, onFai
         data: JSON.stringify(params),
         contentType: 'application/json',
         success: function(result){
-            console.log(result)
+            //console.log(result)
             onSuccess(result)
         },
         error: function(jqXHR, textStatus, errorThrown) {
-            console.error('Error: ', textStatus, ', Details: ', errorThrown)
-            console.error('Response: ', jqXHR.responseText)
+            //console.error('Error: ', textStatus, ', Details: ', errorThrown)
+            //console.error('Response: ', jqXHR.responseText)
             onFailure(jqXHR, textStatus, errorThrown)
         }
     })

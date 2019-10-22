@@ -1,19 +1,23 @@
 * epics
-    * basic UI with technical fundamentals (fwk and calendar widget)
+    * basic UI with technical fundamentals
+        * fwk and calendar widget
+        * simulate signin as a first step
     * home view
-    * register
-    * signin
-    * update user
-    * signout
     * view prev/next month / initial
     * insert resa / initial
     * update resa
     * delete resa
     * import school holidays
+    * user management
+        * register
+        * signin
+        * update user
+        * signout
 * technical improvements
-    * cloudformation CORS settings for the API
-    * finalise GET to consume an input month
-    * factor function boilerplate
+    * add user functions
+    * add holidays functions
+    * extract function boilerplate into a shared module
+    * retest API
     * cloudformation structure template (AWS::CloudFormation::Stack or AWS::Include)
     * test account
         * cloudformation permissions
@@ -21,9 +25,12 @@
         * ...
     * cloudwatch log expiration
     * ci/cd pipeline (CodePipeline)
-    * test automation / first draft available in node.js / need to find a proper assert framework
-    * error cases
 * done
+    * error cases
+    * test automation
+    * finalise GET to consume an input month
+    * finalise POST and PUT to prevent overlaps
+    * cloudformation CORS settings for the API
     * technical foundations
         * web -> apigw -> authorization -> lambda -> dynamodb
     * consume too much S3 accesses
