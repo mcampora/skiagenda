@@ -399,7 +399,7 @@ Resources:
                 method.response.header.Access-Control-Allow-Origin: "'*'"
         #PassthroughBehavior: NEVER
         RequestTemplates:
-          application/json: ''
+          application/json: "{\"month\": \"$input.params('month')\"}"
       MethodResponses:
         - ResponseParameters:
             method.response.header.Access-Control-Allow-Headers: true

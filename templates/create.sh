@@ -13,7 +13,7 @@ else
     # update the temporary content with lambdas
     pushd .
         cd ../backend
-        zip functions.zip *.js
+        zip -r functions.zip .
     popd
     aws s3 sync ../backend s3://skiagenda-source/backend
 fi

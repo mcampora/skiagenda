@@ -107,6 +107,24 @@ describe("Reservation test suite -", function() {
         })
     })
 
+    it("scan, match all", function() {
+        return resa.list(date('10'))
+        .then(d => {
+            //console.log(d)
+            expect(d).not.toBe(null)
+            expect(d.Count).toBeGreaterThan(2)
+        })
+    })
+
+    it("scan, match none", function() {
+        return resa.list('2019-09-10 10:00')
+        .then(d => {
+            //console.log(d)
+            expect(d).not.toBe(null)
+            expect(d.Count).toBe(0)
+        })
+    })
+
     it("overlap, test dates overlap", function() {
         return resa.overlap(date('01'),date('03'))
         .then(d => {
@@ -143,24 +161,6 @@ describe("Reservation test suite -", function() {
         })
     })
 
-    it("scan, match all", function() {
-        return resa.list(date('10'))
-        .then(d => {
-            //console.log(d)
-            expect(d).not.toBe(null)
-            expect(d.Count).toBeGreaterThan(2)
-        })
-    })
-
-    it("scan, match none", function() {
-        return resa.list('2019-09-10 10:00')
-        .then(d => {
-            //console.log(d)
-            expect(d).not.toBe(null)
-            expect(d.Count).toBe(0)
-        })
-    })
-
     it("update, with date overlap", function() {
         return resa.update({
             'resaid'      : 'myspecialid',
@@ -177,6 +177,20 @@ describe("Reservation test suite -", function() {
     it("update", function() {
         return resa.update({
             'resaid'      : 'myspecialid',
+            'firstday'    : date('11'),
+            'lastday'     : date('18'),
+            'resaowner'   : 'marco',
+        })
+        .then(d => {
+            //console.log(d)
+            expect(d).not.toBe(null)
+            expect(d.Attributes.lastday).toBe(date('18'))
+        })
+    })
+
+    it("update", function() {
+        return resa.update({
+            'resaid'      : 'myspecialid',
             'firstday'    : date('26'),
             'lastday'     : date('30'),
             'resaowner'   : 'marco',
@@ -185,6 +199,48 @@ describe("Reservation test suite -", function() {
             //console.log(d)
             expect(d).not.toBe(null)
             expect(d.Attributes.lastday).toBe(date('30'))
+        })
+    })
+
+    it("update", function() {
+        return resa.update({
+            'resaid'      : 'myspecialid',
+            'firstday'    : date('26'),
+            'lastday'     : date('30'),
+            'resaowner'   : 'zoro',
+        })
+        .catch(e => {
+            //console.log(e)
+            expect(e).not.toBe(null)
+            expect(e.code).toBe('ConditionalCheckFailedException')
+        })
+    })
+
+    it("update as in the API test", function() {
+        return resa.create({
+            'resaid'      : 'myspecialidAPI',
+            'firstday'    : '2021-01-07 10:00',
+            'lastday'     : '2021-01-14 10:00',
+            'resaowner'   : 'marco',
+        })
+        .then(d => {
+            //console.log(d)
+            return resa.update({
+                'resaid'      : 'myspecialidAPI',
+                'firstday'    : '2021-01-08 10:00',
+                'lastday'     : '2021-01-10 10:00',
+                'resaowner'   : 'marco',
+            })
+        })
+        .then(d => {
+            //console.log(d)
+            expect(d).not.toBe(null)
+            expect(d.Attributes.lastday).toBe('2021-01-10 10:00')
+            return resa.remove('myspecialidAPI','marco')
+        })
+        .then(d => {
+            //console.log(d)
+            expect(d).not.toBe(null)
         })
     })
 

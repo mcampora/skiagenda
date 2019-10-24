@@ -1,42 +1,18 @@
 // ajax help[er for reservation APIs/lambdas
-function _reservation(token, name, method, params, onSuccess=function(){}, onFailure=function(){}) {
-    //console.log(name + ' ->')
+function _ajax(token, rsc, method, params) {
+    //console.log(rsc + ' ->')
     //console.log(token)
     //console.log(params)
     //console.log(params)
-    $.ajax({
+    return $.ajax({
         method: method,
-        url: _config.api.invokeUrl + '/resa',
-        headers: {
-            Authorization: token
-        },
-        data: JSON.stringify(params),
-        contentType: 'application/json',
-        success: function(result){
-            //console.log(result)
-            onSuccess(result)
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            //console.error('Error: ', textStatus, ', Details: ', errorThrown)
-            //console.error('Response: ', jqXHR.responseText)
-            onFailure(jqXHR, textStatus, errorThrown)
-        }
-    })
+        url: _config.api.invokeUrl + rsc,
+        headers: { Authorization: token },
+        data: params,
+        contentType: 'application/json'
+    }).promise()
 }
-var addReservation = 
-    (token, params) => 
-        { return new Promise((onsuccess,onfailure) => 
-            _reservation(token, 'addReservation', 'POST', params, onsuccess, onfailure))}
-var listReservations = 
-    (token, params) => 
-        { return new Promise((onsuccess,onfailure) => 
-            _reservation(token, 'listReservations', 'GET', params, onsuccess, onfailure))}
-var updateReservation = 
-    (token, params) => 
-        { return new Promise((onsuccess,onfailure) => 
-            _reservation(token, 'updateReservation', 'PUT', params, onsuccess, onfailure))}
-var deleteReservation = 
-    (token, params) => 
-        { return new Promise((onsuccess,onfailure) => 
-            _reservation(token, 'deleteReservation', 'DELETE', params, onsuccess, onfailure))}
-                
+var addReservation = (token, params) => { return _ajax(token, '/resa', 'POST', JSON.stringify(params))}
+var listReservations = (token, params) => { return _ajax(token, '/resa', 'GET', params)}
+var updateReservation = (token, params) => { return _ajax(token, '/resa', 'PUT', JSON.stringify(params))}
+var deleteReservation = (token, params) => { return _ajax(token, '/resa', 'DELETE', JSON.stringify(params))}

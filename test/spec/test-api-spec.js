@@ -18,45 +18,46 @@ eval(fs.readFileSync('../website/js/resa.js').toString())
 //
 // the test suite
 //
-describe("Test user management", function() {
+describe("Test API -", function() {
 
-    it("check we have a proper config", function() {
+    it("fetch client config", function() {
       return getConfig().then(() => {
         expect(_config).not.toBe(null)
         expect(_config.api.invokeUrl).not.toBe(null)
       })
     })
 
-    it("check that test user has been properly cleaned up", function() {
+    it("clean up the test user", function() {
       return cleanupUser('mcm').then(() => {
         expect(true).toBe(true)
       })
     })
 
-    it("check that the user has been properly registered", function() {
+    it("register the test user", function() {
       return register('mcm','success@simulator.amazonses.com','Test#2019').then((d) => {
         expect(d).not.toBe(null)
         expect(d.user.username).toBe('mcm')
       })
     })
 
-    it("check that the user is verified", function() {
+    it("verify the test user", function() {
       return confirmUser('mcm').then((d) => {
         expect(true).toBe(true)
       })
     })
 
-    it("check signin is succesful", function() {
+    it("sign the test user", function() {
       return signin('mcm','Test#2019').then((d) => {
         expect(accessToken).not.toBe(null)
       })
     })
 
     var gresaid = null
-    it("check creation of a basic reservation", function() {
-      const firstday = '1'
-      const lastday = '2' 
-      return addReservation(accessToken,{resa:{firstday:firstday,lastday:lastday}}).then((d) => {
+    it("create of a basic reservation", function() {
+      const firstday = '2021-01-07 10:00'
+      const lastday = '2021-01-14 10:00' 
+      return addReservation(accessToken,{resa:{firstday:firstday,lastday:lastday}})
+      .then((d) => {
         expect(d.resaid).not.toBe(null)
         expect(d.resaowner).toBe('mcm')
         expect(d.firstday).toBe(firstday)
@@ -64,36 +65,58 @@ describe("Test user management", function() {
         // save the resaid
         gresaid = d.resaid
       })
+      .catch(e => {
+        console.log(e)
+        fail()
+      })
     })
 
     var nbresa = 0
-    it("check retrieve of a list of reservations", function() {
-      return listReservations(accessToken,{month:'11'}).then((d) => {
+    it("retrieve the list of reservations, full list", function() {
+      return listReservations(accessToken,"month=2021-01-10 10:00").then((d) => {
+        //console.log(d)
         expect(d.Reservations.Items.length).toBeGreaterThan(0)
         nbresa = d.Reservations.Items.length
       })
     })
 
-    it("check reservation update", function() {
-      const firstday = '2'
-      const lastday = '3' 
-      return updateReservation(accessToken,{resa:{resaid:gresaid,firstday:firstday,lastday:lastday}}).then((d) => {
+    it("retrieve the list of reservations, empty list", function() {
+      return listReservations(accessToken,"month=2021-06-10 10:00").then((d) => {
+        //console.log(d)
+        expect(d.Reservations.Items.length).toBe(0)
+      })
+    })
+
+    it("update the reservation, no overlap", function() {
+      const firstday = '2021-01-08 10:00'
+      const lastday = '2021-01-10 10:00' 
+      //const firstday = '2021-01-15 10:00'
+      //const lastday = '2021-01-20 10:00' 
+      const resa = {resa:{resaid:gresaid,firstday:firstday,lastday:lastday}}
+      return updateReservation(accessToken,resa)
+      .then(d => {
         //console.log(d)
         expect(d.resaid).toBe(gresaid)
         expect(d.resaowner).toBe('mcm')
         expect(d.firstday).toBe(firstday)
         expect(d.lastday).toBe(lastday)
       })
+      .catch(e => {
+        console.log(resa)
+        console.log(e)
+        fail()
+      })
     })
 
-    it("check delete reservation", function() {
-      return deleteReservation(accessToken,{resa:{resaid:gresaid}}).then((d) => {
+    it("delete the reservation", function() {
+      return deleteReservation(accessToken,{resaid:gresaid})
+      .then(d => {
         //console.log(d)
-        expect(d.resaid).toBe(gresaid)
-        expect(d.resaowner).toBe('mcm')
-        listReservations(accessToken,{month:'11'}).then((d) => {
-          expect(d.Reservations.Items.length).toBeLowerThan(nbresa)
-        })
+        expect(d).not.toBe(null)
+      })
+      .catch(e => {
+        console.log(e)
+        fail()
       })
     })
 })

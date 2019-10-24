@@ -14,10 +14,10 @@
         * update user
         * signout
 * technical improvements
+    * GET is not working ; params are not passed as part of the body
     * add user functions
     * add holidays functions
     * extract function boilerplate into a shared module
-    * retest API
     * cloudformation structure template (AWS::CloudFormation::Stack or AWS::Include)
     * test account
         * cloudformation permissions
