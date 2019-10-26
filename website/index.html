@@ -4,38 +4,36 @@
   <meta charset="UTF-8">
   <title>Ski Agenda Pet Project</title>
   
-  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="rsc/main.css">
     
+  <link href='js/fullcalendar-4.3.1/core/main.css' rel='stylesheet' />
+  <link href='js/fullcalendar-4.3.1/daygrid/main.css' rel='stylesheet' />
+  <script src='js/fullcalendar-4.3.1/core/main.js'></script>
+  <script src='js/fullcalendar-4.3.1/daygrid/main.js'></script>
+  <script src='js/fullcalendar-4.3.1/interaction/main.js'></script>
+
   <script src="js/jquery-3.4.1.js"></script>
+
   <script src="js/amazon-cognito-identity.min.js"></script>
+  
   <script src="js/config.js"></script>
   <script src="js/authent.js"></script>
   <script src="js/resa.js"></script>
+  <script src="js/calendar.js"></script>
 
   <script>
     // simulate signin, assumption: there's a user 'mcm' in the pool
-    
+    signin('mcm','Test#2019').then((d) => { console.log(accessToken) })
+    createCalendar('calendar')
   </script>
-
 </head>
 <body class="page-home">
 
   <header class="site-header">
-    <h1 class="title">Ski Agenda</h1>
-    <nav class="site-nav">
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="unicorns.html">Meet the Unicorns</a></li>
-        <li><a href="investors.html">Investors &amp; Board of Directors</a></li>
-        <li><a href="faq.html">FAQ</a></li>
-        <li><a href="apply.html">Apply</a></li>
-      </ul>
-    </nav>
-    <button type="button" class="btn-menu"><span>Menu</span></button>
-    <a class="home-button" href="/register.html">Giddy Up!</a>
+    <img src="rsc/auron-logo-metropole.png" class="logo" width="200"></img>
   </header>
 
-  <div id="results">/div>
+  <div id='calendar'></div>
 
-  </body>
+</body>
 </html>

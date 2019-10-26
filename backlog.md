@@ -1,7 +1,4 @@
 * epics
-    * basic UI with technical fundamentals
-        * fwk and calendar widget
-        * simulate signin as a first step
     * home view
     * view prev/next month / initial
     * insert resa / initial
@@ -14,7 +11,11 @@
         * update user
         * signout
 * technical improvements
-    * GET is not working ; params are not passed as part of the body
+    * UI
+        * fix the overlap control at creation time
+        * open a dialog at click time and offer delete action
+    * split backend and database scripts to preserve data
+    * work on a backup / restore procedure for the data
     * add user functions
     * add holidays functions
     * extract function boilerplate into a shared module
@@ -26,6 +27,9 @@
     * cloudwatch log expiration
     * ci/cd pipeline (CodePipeline)
 * done
+    * basic UI with technical fundamentals
+        * fwk and calendar widget
+        * simulate signin as a first step
     * error cases
     * test automation
     * finalise GET to consume an input month
