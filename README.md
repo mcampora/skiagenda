@@ -12,10 +12,10 @@
 * setup and tests
     * configure AWS CLI properly
         * >aws configure
-        * AWS Access Key ID [None]: /accesskey/
-        * AWS Secret Access Key [None]: /secretkey/
-        * Default region name [None]: us-east-1
-        * Default output format [None]:
+        * >AWS Access Key ID [None]: /accesskey/
+        * >AWS Secret Access Key [None]: /secretkey/
+        * >Default region name [None]: us-east-1
+        * >Default output format [None]:
     * install http-server to test and evolve the website part of the project
         * >npm install http-server -g
         * >http-server [path] [options]
