@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Creates the database layer, DynamoDB tables
+
+Resources:
+  # DynamoDB tables
+  Reservations:
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      TableName: "Reservations"
+      AttributeDefinitions: 
+        - AttributeName: "resaid"
+          AttributeType: "S"
+      KeySchema: 
+        - AttributeName: "resaid"
+          KeyType: "HASH"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+  Users:
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      TableName: "Users"
+      AttributeDefinitions: 
+        - AttributeName: "userid"
+          AttributeType: "S"
+      KeySchema: 
+        - AttributeName: "userid"
+          KeyType: "HASH"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+  Holidays:
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      TableName: "Holidays"
+      AttributeDefinitions: 
+        - AttributeName: "name"
+          AttributeType: "S"
+      KeySchema: 
+        - AttributeName: "name"
+          KeyType: "HASH"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"

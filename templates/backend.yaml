@@ -147,47 +147,6 @@ Resources:
             finally:
               cfnresponse.send(event, context, status, {}, new_physical_id)
   
-  # DynamoDB tables
-  Reservations:
-    Type: AWS::DynamoDB::Table
-    Properties: 
-      TableName: "Reservations"
-      AttributeDefinitions: 
-        - AttributeName: "resaid"
-          AttributeType: "S"
-      KeySchema: 
-        - AttributeName: "resaid"
-          KeyType: "HASH"
-      ProvisionedThroughput: 
-        ReadCapacityUnits: "5"
-        WriteCapacityUnits: "5"
-  Users:
-    Type: AWS::DynamoDB::Table
-    Properties: 
-      TableName: "Users"
-      AttributeDefinitions: 
-        - AttributeName: "userid"
-          AttributeType: "S"
-      KeySchema: 
-        - AttributeName: "userid"
-          KeyType: "HASH"
-      ProvisionedThroughput: 
-        ReadCapacityUnits: "5"
-        WriteCapacityUnits: "5"
-  Holidays:
-    Type: AWS::DynamoDB::Table
-    Properties: 
-      TableName: "Holidays"
-      AttributeDefinitions: 
-        - AttributeName: "name"
-          AttributeType: "S"
-      KeySchema: 
-        - AttributeName: "name"
-          KeyType: "HASH"
-      ProvisionedThroughput: 
-        ReadCapacityUnits: "5"
-        WriteCapacityUnits: "5"
-
   # lambda functions
   BackendRole:
     Type: AWS::IAM::Role
