@@ -1,7 +1,8 @@
-LAYER=$1
+#export AWS_PROFILE=skiagenda-test
+export LAYER=$1
 if [ -z $LAYER ]
 then
-    LAYER = 'backend'
+    export LAYER = 'backend'
 fi
 
 # cleanup the stack
@@ -15,8 +16,5 @@ if [ $LAYER = 'website' ]
 then
     # empty the website bucket
     aws s3 rb s3://skiagenda --force
-
-    # cleanup the temporary S3 bucket
-    aws s3 rb s3://skiagenda-source --force
 fi
 

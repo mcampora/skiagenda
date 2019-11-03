@@ -5,8 +5,8 @@
     * fully deployed on AWS, use:
         * S3 for the Web content
         * DynamoDB as persistent layer
-        * Cognito to identiy users and associate reservations
-        * Lambda to process user requests
+        * Cognito to identiy users and link reservations
+        * Lambda functions to process user clicks
         * Cloudformation to automate setup
         * Fullcalendar and JQuery libraries in the UI
 * setup and tests
@@ -23,3 +23,4 @@
         * >npm install -g jasmine
         * >cd test # go to the test folder
         * >jasmine # to launch the tests
+    

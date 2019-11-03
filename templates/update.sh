@@ -1,8 +1,12 @@
-LAYER=$1
+#export AWS_PROFILE=skiagenda-test
+export LAYER=$1
 if [ -z $LAYER ]
 then
-    LAYER = 'backend'
+    export LAYER = 'backend'
 fi
+
+# create/refresh the source bucket
+./upload.sh
 
 aws cloudformation update-stack \
     --capabilities CAPABILITY_IAM \
