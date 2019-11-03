@@ -9,22 +9,41 @@
   <link href='js/fullcalendar-4.3.1/core/main.css' rel='stylesheet' />
   <link href='js/fullcalendar-4.3.1/daygrid/main.css' rel='stylesheet' />
   <script src='js/fullcalendar-4.3.1/core/main.js'></script>
+  <script src='js/fullcalendar-4.3.1/core/locales/fr.js'></script>
   <script src='js/fullcalendar-4.3.1/daygrid/main.js'></script>
   <script src='js/fullcalendar-4.3.1/interaction/main.js'></script>
 
+  <script src='https://unpkg.com/popper.js/dist/umd/popper.min.js'></script>
+  <script src='https://unpkg.com/tooltip.js/dist/umd/tooltip.min.js'></script>
+  
   <script src="js/jquery-3.4.1.js"></script>
 
   <script src="js/amazon-cognito-identity.min.js"></script>
-  
+
   <script src="js/config.js"></script>
   <script src="js/authent.js"></script>
   <script src="js/resa.js"></script>
   <script src="js/calendar.js"></script>
+  <script src="js/tooltip.js"></script>
 
   <script>
-    // simulate signin, assumption: there's a user 'mcm' in the pool
-    signin('mcm','Test#2019').then((d) => { console.log(accessToken) })
-    createCalendar('calendar')
+    $( document ).ready(function() {
+      // simulate signin, assumption: there's a user 'mcm' in the pool
+      signin('mcm','Test#2019')
+      .then(d=>{ 
+        console.log(accessToken)
+        createCalendar('calendar')
+        Tooltip.init('tooltip')
+        $('#wait').hide()
+      })
+    })
+
+    function error(e) {
+      console.log('Error')
+      console.log(e)
+      $('#alert #msg').html(e)
+      $('#alert').fadeIn()
+    }
   </script>
 </head>
 <body class="page-home">
@@ -33,7 +52,54 @@
     <img src="rsc/auron-logo-metropole.png" class="logo" width="200"></img>
   </header>
 
-  <div id='calendar'></div>
+  <div id='alert' class="alert" style="display:none">
+    <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span> 
+    <span id="msg">Indicates a dangerous or potentially negative action.</span>
+  </div>
+  
+  <div id='calendar'>
+  </div>
+
+  <div id='wait'>
+    <img class="polaroid" src="rsc/skilift.gif"/>
+  </div>
+
+  <div id="tooltip" class="tooltip" role="tooltip" style="display:none">
+    <div class="tooltip-arrow"></div>
+    <div class="tooltip-header">
+      <button id="tooltip-delete" class="button tooltip-delete">
+        <svg width="20" height="20" viewBox="0 0 24 24" focusable="false" class=".tooltip">
+          <path d="M15 4V3H9v1H4v2h1v13c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V6h1V4h-5zm2 15H7V6h10v13z"></path>
+          <path d="M9 8h2v9H9zm4 0h2v9h-2z"></path>
+        </svg>  
+      </button>
+      <button id="tooltip-close" class="button tooltip-close">
+        <svg width="20" height="20" viewBox="0 0 24 24" focusable="false" class=".tooltip">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path>
+        </svg>
+      </button>
+    </div>
+    <table>
+      <tr>
+        <td>source:</td><td><span id="tooltip-source">mcm</span></td>
+      </tr>
+      <tr>
+        <td>periode:</td><td><span id="tooltip-period">10OCT2019</span></td>
+      </tr>
+      <tr>
+        <td>note:</td><td><span id="tooltip-note">...</span></td>
+      </tr> 
+      <tr>
+        <td>id:</td><td><span id="tooltip-id">XXX</span></td>
+      </tr>  
+      <tr>
+        <td>creation time:</td><td><span id="tooltip-creation">01JAN2019</span></td>
+      </tr>
+      <tr>
+        <td>last update:</td><td><span id="tooltip-update">02JAN2019</span></td>
+      </tr>  
+    </table>
+  </div>
 
 </body>
 </html>
