@@ -12,11 +12,14 @@
         * set minimum duration to 2 days, one night?
         * add an error popup for API issues / work on message control
         * Calendar::toResa -> dates are translated in zulu time
-    * work on a backup / restore procedure for the data 
-        * the restore is etremely long and you have to drop the table beforehand
-        * a multi account setup where the prod instance is preserved could be a good alternative
+    * a multi account setup test vs prod
     * add user functions
     * add holidays functions
+        * can parse ical sources available on data.gouv.fr
+        * https://www.data.gouv.fr/en/datasets/le-calendrier-scolaire-format-ical/
+        * A: https://www.data.gouv.fr/en/datasets/r/b580138b-ae5c-4b4d-8cbf-110ffd373192
+        * B: https://www.data.gouv.fr/en/datasets/r/139ef8d5-f2ae-41fc-bc3a-d0e90a9ab7ad
+        * C: https://www.data.gouv.fr/en/datasets/r/17254f2a-a611-4b1f-995c-df45a4570f12
     * extract function boilerplate into a shared module
     * cloudformation structure template (AWS::CloudFormation::Stack or AWS::Include)
     * cloudwatch log expiration

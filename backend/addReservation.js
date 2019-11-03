@@ -11,13 +11,13 @@ exports.handler = (event, context, callback) => {
       utils.errorResponse('Authorization not configured', context.awsRequestId, callback)
       return
     }
-    const requestBody = JSON.parse(event.body)
-
+    const request = JSON.parse(event.body)
+    const username = event.requestContext.authorizer.claims['cognito:username']
     const params = {
         resaid : toUrlString(randomBytes(16)),
-        firstday : requestBody.resa.firstday,
-        lastday : requestBody.resa.lastday,
-        resaowner : event.requestContext.authorizer.claims['cognito:username']
+        firstday : request.resa.firstday,
+        lastday : request.resa.lastday,
+        resaowner : username
     }
     return resa.create(params)
     .then(d => {
@@ -41,4 +41,3 @@ const toUrlString = (buffer) => {
         .replace(/\//g, '_')
         .replace(/=/g, '')
 }
-
