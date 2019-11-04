@@ -34,10 +34,10 @@ Resources:
     Properties: 
       TableName: "Holidays"
       AttributeDefinitions: 
-        - AttributeName: "name"
+        - AttributeName: "hid"
           AttributeType: "S"
       KeySchema: 
-        - AttributeName: "name"
+        - AttributeName: "hid"
           KeyType: "HASH"
       ProvisionedThroughput: 
         ReadCapacityUnits: "5"
