@@ -1,8 +1,7 @@
 var AWS = require('aws-sdk') // Load the AWS SDK for Node.js
 AWS.config.update({region: 'us-east-1'}) // Set the region 
-var ddb = new AWS.DynamoDB.DocumentClient({apiVersion: '2012-08-10'}) // Create DynamoDB document client
-var Reservations = require('../../backend/node_modules/reservations/index.js')
-var resa = new Reservations(ddb)
+var Reservations = require('../../backend/local_modules/reservations/index.js')
+var resa = new Reservations(AWS)
 
 describe("Reservation test suite -", function() {
     // helpers

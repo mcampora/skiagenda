@@ -1,6 +1,6 @@
 module.exports = class Reservations {
-    constructor(ddb) {
-        this.ddb = ddb
+    constructor(AWS) {
+        this.ddb = new AWS.DynamoDB.DocumentClient({apiVersion: '2012-08-10'})
     }
 
     // create a record, keep track of the owner
