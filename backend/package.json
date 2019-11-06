@@ -4,11 +4,11 @@
   "description": "skiagenda lambda functions",
   "main": "listReservations.js",
   "dependencies": {
-    "ical": "^0.6.0",
-    "utils": "file:./local_modules/utils",
-    "users": "file:./local_modules/users",
     "holidays": "file:./local_modules/holidays",
-    "reservations": "file:./local_modules/reservations"
+    "ical": "^0.6.0",
+    "reservations": "file:./local_modules/reservations",
+    "users": "file:./local_modules/users",
+    "utils": "file:./local_modules/utils"
   },
   "devDependencies": {},
   "scripts": {
