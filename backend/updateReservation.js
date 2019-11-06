@@ -1,8 +1,7 @@
 const AWS = require('aws-sdk')
-const ddb = new AWS.DynamoDB.DocumentClient()
-const utils = require('utils')
-const reservations = require('reservations')
-const resa = new reservations(ddb)
+const utils = require('./local_modules/utils/index.js')
+const reservations = require('./local_modules/reservations/index.js')
+const resa = new reservations(AWS)
 
 exports.handler = (event, context, callback) => {
     console.log('Received event: ', event)
