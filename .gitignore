@@ -1,6 +1,6 @@
 backend/functions.zip
+backend/package-lock.json
+backend/node_modules
 test/package-lock.json
 test/node_modules
 test/localconfig.js
-test/promises.js
-website/fullcalendar-4.3.1

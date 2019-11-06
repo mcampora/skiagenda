@@ -22,3 +22,4 @@
         * C: https://www.data.gouv.fr/en/datasets/r/17254f2a-a611-4b1f-995c-df45a4570f12
         struggling with lambda packaging of dependencies
     * ci/cd pipeline (CodePipeline)
+    * cleanup the packaging mess (do not put dependencies in git)
