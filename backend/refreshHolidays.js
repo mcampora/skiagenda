@@ -1,6 +1,7 @@
 var AWS = require('aws-sdk') // Load the AWS SDK for Node.js
 const Holidays = require('./local_modules/holidays/index.js')
 const holidays = new Holidays(AWS)
+const utils = require('./local_modules/utils/index.js')
 
 exports.handler = (event, context, callback) => {
     console.log('Received event: ', event)
@@ -22,10 +23,10 @@ exports.handler = (event, context, callback) => {
     .then(() => {
         holidays.import('C', c_url)
     })
-    .then(() => {
+    .then(d => {
         callback(null, {
             statusCode: 201,
-            body: JSON.stringify(params),
+            body: JSON.stringify(d),
             headers: {
                 'Access-Control-Allow-Origin': '*'
             }

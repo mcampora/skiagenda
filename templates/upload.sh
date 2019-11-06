@@ -5,4 +5,4 @@ pushd .
     cd ../backend
     zip -r functions.zip .
 popd
-aws s3 sync ../backend/functions.zip s3://skiagenda-source/backend
+aws s3 cp ../backend/functions.zip s3://skiagenda-source/backend/functions.zip

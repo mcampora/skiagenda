@@ -64,10 +64,10 @@ describe("Test Holidays API -", function() {
       })
     })
 
-    it("retrieve the list of holidays", function() {
+    xit("retrieve the list of holidays", function() {
       return listHolidays(accessToken).then((d) => {
-        console.log(d)
-        expect(d.Holidays.Items.length).toBeGreaterThan(0)
+        //console.log(d)
+        expect(d.Count).toBeGreaterThan(0)
       })
     })
 

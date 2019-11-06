@@ -678,16 +678,16 @@ Resources:
       Principal: "apigateway.amazonaws.com"
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/POST/resa"
 
-  InvokeHolidaysPostPermission:
+  InvokeHolidaysPutPermission:
     Type: "AWS::Lambda::Permission"
     Description: "grant the API gateway the right to invoke addReservationFunction"
     DependsOn:
-      - "PostMethod"
+      - "HolidaysRefreshMethod"
     Properties:
       Action: "lambda:InvokeFunction"
       FunctionName: !GetAtt "RefreshHolidaysFunction.Arn"
       Principal: "apigateway.amazonaws.com"
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/POST/holidays"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/PUT/holidays"
 
   InvokePutPermission:
     Type: "AWS::Lambda::Permission"
