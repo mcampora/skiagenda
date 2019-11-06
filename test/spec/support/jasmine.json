@@ -7,5 +7,7 @@
     "helpers/**/*.js"
   ],
   "stopSpecOnExpectationFailure": true,
-  "random": false
+  "oneFailurePerSpec": true,
+  "random": false,
+  "hideDisabled": true
 }

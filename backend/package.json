@@ -1,0 +1,19 @@
+{
+  "name": "backend",
+  "version": "0.0.1",
+  "description": "skiagenda lambda functions",
+  "main": "listReservations.js",
+  "dependencies": {
+    "ical": "^0.6.0",
+    "utils": "file:./local_modules/utils",
+    "users": "file:./local_modules/users",
+    "holidays": "file:./local_modules/holidays",
+    "reservations": "file:./local_modules/reservations"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "mcm",
+  "license": "ISC"
+}
