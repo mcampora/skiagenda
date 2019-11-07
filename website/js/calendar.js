@@ -32,11 +32,11 @@ function createCalendar(elt) {
         // actually when you release the mouse button on the last day
         select: addEvent,
         // prevent selection of an occupied slot
-        selectOverlap: function(event) {
-            console.log('selectOverlap')
-            console.log(event)
-            return false
-        },
+        //selectOverlap: function(event) {
+            //console.log('selectOverlap')
+            //console.log(event)
+            //return false
+        //},
         // only triggered when you try to select an empty slot,
         // hence the parameter does not include the underlying event
         selectAllow: function(selectInfo) { 
@@ -48,15 +48,15 @@ function createCalendar(elt) {
         // -- UPDATE --
         // triggered when you drag an event around
         // and you pass over another event
-        eventOverlap: function(stillEvent, movingEvent) {
-            console.log('eventOverlap!')
-            var stillResa = toReservation(stillEvent)
-            var movingResa = toReservation(movingEvent)
-            const res = 
-                ((stillResa.lastday <= movingResa.firstday) || (stillResa.firstday >= movingEvent.lastday))
-            console.log(res)
-            return res
-        },
+        //eventOverlap: function(stillEvent, movingEvent) {
+            //console.log('eventOverlap!')
+            //var stillResa = toReservation(stillEvent)
+            //var movingResa = toReservation(movingEvent)
+            //const res = 
+                //((stillResa.lastday <= movingResa.firstday) || (stillResa.firstday >= movingEvent.lastday))
+            //console.log(res)
+            //return res
+        //},
         editable: true,
         eventResizableFromStart: true,
         eventDurationEditable: true,
@@ -66,7 +66,6 @@ function createCalendar(elt) {
         // triggered when you click on a given event, leads tp -- DELETE --
         eventClick: selectEvent,
     })
-    //getEvents(new Date().toISOString())
     calendar.render()
 }
 
@@ -81,9 +80,33 @@ function toEvent(reservation) {
         title: '(' + reservation.resaowner + ')',
         allDay: true,
         //overlap: false,
-        extendedProps: { r: reservation }
+        extendedProps: { r: reservation },
+        color: 'rgb(125,125,125)',
     }
     return event
+}
+
+// helper funciton, build a calendar event object
+// using an holiday object as input
+// it overides default capability of the grid
+// and tweak the event style
+function toHoliday(h) {
+    const colors = {
+        A: 'rgb(228,129,87)',
+        B: 'rgb(97,156,209)',
+        C: 'rgb(175,204,83)',
+    }
+    return {
+        start: h.start,
+        end: h.end,
+        title: h.summary,
+        allDay: true,
+        className: 'holiday_' + h.zone,
+        editable: false,
+        startEditable: false,
+        durationEditable: false,
+        color: colors[h.zone],
+    }
 }
 
 // helper function
@@ -135,23 +158,36 @@ function addEvent(d) {
 function selectEvent(e) {
     console.log('Calendar::selectEvent')
     console.log(e)
-    Tooltip.instance().open(e);
+    if (e.event.extendedProps.r) {
+        Tooltip.instance().open(e);
+    }
 }
 
+// fetch the list of reservations and the list of holiday periods
 function getEvents(d, successCallback, failureCallback) {
     console.log("Calendar::getEvents")
     console.log(d)
+    var e = []
     // compute the date in the  middle of the  view
     var focus = new Date(d.start)
     focus.setDate(15)
-    // TBD
     var month = encodeURIComponent(focus.toISOString())
+    // fetch reservations
     listReservations(accessToken,"month=" + month)
     .then(d=>{
         console.log('success')
         console.log(d)
-        var e = d.Reservations.Items.map(i => { return toEvent(i) })
-        console.log(e)
+        // translate a list of reservations into a list of events
+        e = d.Reservations.Items.map(i => { return toEvent(i) })
+        //console.log(e)
+        // fetch holidays
+        return listHolidays(accessToken)
+    })
+    .then(d => {
+        console.log(d)
+        d.Items.forEach(i => {
+            e.push(toHoliday(i))
+        })
         successCallback(e)
     })
     .catch(e=>{

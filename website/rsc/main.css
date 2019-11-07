@@ -174,3 +174,25 @@ derived from this CSS on this page: https://popper.js.org/tooltip-examples.html
 .closebtn:hover {
   color: black;
 }
+
+.holiday_A {
+  background-color: rgb(228,129,87);
+  border-color:rgb(228,129,87);
+  color:white;
+}
+
+.holiday_B {
+  background-color: rgb(97,156,209);
+  border-color:rgb(97,156,209);
+  color:white;
+}
+
+.holiday_C {
+  background-color: rgb(175,204,83);
+  border-color:rgb(175,204,83);
+  color:white;
+}
+
+/* <a class="fc-day-grid-event fc-h-event fc-event fc-not-start fc-end holiday_A" style="
+background-color:red;border-color:red;color:white
+"><div class="fc-content"> <span class="fc-title">Vacances de la Toussaint - Zone A</span></div></a>*/

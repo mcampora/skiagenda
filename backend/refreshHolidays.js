@@ -15,15 +15,23 @@ exports.handler = (event, context, callback) => {
     const a_url = requestBody.a
     const b_url = requestBody.b
     const c_url = requestBody.c
-    
-    holidays.import('A', a_url)
-    .then(() => {
-        holidays.import('B', b_url)
-    })
-    .then(() => {
-        holidays.import('C', c_url)
+
+    console.log("let's start!")
+    return holidays.wipe()
+    .then(d => {
+        console.log('cleanup done!')
+        return holidays.import('A', a_url)
     })
     .then(d => {
+        console.log('A:', d)
+        return holidays.import('B', b_url)
+    })
+    .then(d => {
+        console.log('B:', d)
+        return holidays.import('C', c_url)
+    })
+    .then(d => {
+        console.log('C:', d)
         callback(null, {
             statusCode: 201,
             body: JSON.stringify(d),

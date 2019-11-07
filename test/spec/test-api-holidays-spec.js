@@ -59,7 +59,7 @@ describe("Test Holidays API -", function() {
         b: 'https://www.data.gouv.fr/en/datasets/r/139ef8d5-f2ae-41fc-bc3a-d0e90a9ab7ad',
         c: 'https://www.data.gouv.fr/en/datasets/r/17254f2a-a611-4b1f-995c-df45a4570f12'})
       .then(d => {
-          //console.log(d)
+          console.log(d)
           //expect(d).toEqual([])
       })
     })
@@ -67,7 +67,7 @@ describe("Test Holidays API -", function() {
     it("retrieve the list of holidays", function() {
       return listHolidays(accessToken).then((d) => {
         //console.log(d)
-        expect(d.Count).toBeGreaterThan(0)
+        expect(d.Count).toBe(24)
       })
     })
 
