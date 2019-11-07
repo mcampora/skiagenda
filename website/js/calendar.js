@@ -136,7 +136,7 @@ function addEvent(d) {
     // all the maths and actual storage will have to consider this particular behaviour
     console.log('Calendar::addevent')
     //console.log(d)
-    Tooltip.instance().close();
+    Tooltip.instance('resa').close();
     calendar.unselect()
     d.owner = _getUserPool().getCurrentUser().getUsername()
     d.extendedProps = {}
@@ -159,7 +159,10 @@ function selectEvent(e) {
     console.log('Calendar::selectEvent')
     console.log(e)
     if (e.event.extendedProps.r) {
-        Tooltip.instance().open(e);
+        Tooltip.instance('resa').open(e)
+    }
+    else {
+        Tooltip.instance('holidays').open(e)
     }
 }
 
@@ -169,9 +172,11 @@ function getEvents(d, successCallback, failureCallback) {
     console.log(d)
     var e = []
     // compute the date in the  middle of the  view
-    var focus = new Date(d.start)
-    focus.setDate(15)
+    var a = new Date(d.start)
+    var b = new Date(d.end)
+    var focus = new Date(a.getTime()+(b.getTime()-a.getTime())/2)
     var month = encodeURIComponent(focus.toISOString())
+    console.log(month)
     // fetch reservations
     listReservations(accessToken,"month=" + month)
     .then(d=>{

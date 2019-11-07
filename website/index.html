@@ -42,7 +42,8 @@
       .then(d=>{ 
         console.log(accessToken)
         createCalendar('calendar')
-        Tooltip.init('tooltip')
+        Tooltip.init('resa', 'tooltip-resa', Tooltip.resaOpenCallback)
+        Tooltip.init('holidays', 'tooltip-holidays')
         $('#wait').hide()
       })
     })
@@ -73,7 +74,7 @@
     <img class="polaroid" src="rsc/skilift.gif"/>
   </div>
 
-  <div id="tooltip" class="tooltip" role="tooltip" style="display:none">
+  <div id="tooltip-resa" class="tooltip" role="tooltip" style="display:none">
     <div class="tooltip-arrow"></div>
     <div class="tooltip-header">
       <button id="tooltip-delete" class="button tooltip-delete">
@@ -108,6 +109,18 @@
         <td>last update:</td><td><span id="tooltip-update">02JAN2019</span></td>
       </tr>  
     </table>
+  </div>
+
+  <div id="tooltip-holidays" class="tooltip" role="tooltip" style="display:none">
+    <div class="tooltip-arrow"></div>
+    <div class="tooltip-header">
+      <button id="tooltip-close" class="button tooltip-close">
+        <svg width="20" height="20" viewBox="0 0 24 24" focusable="false" class=".tooltip">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path>
+        </svg>
+      </button>
+    </div>
+    <img src='rsc/zones.jpg'/>
   </div>
 
 </body>
