@@ -12,12 +12,9 @@ exports.handler = (event, context, callback) => {
     }
     const request = JSON.parse(event.body)
     const username = event.requestContext.authorizer.claims['cognito:username']
-    const params = {
-        resaid : toUrlString(randomBytes(16)),
-        firstday : request.resa.firstday,
-        lastday : request.resa.lastday,
-        resaowner : username
-    }
+    const params = request.resa
+    params.resaid = toUrlString(randomBytes(16))
+    params.resaowner = username
     return resa.create(params)
     .then(d => {
         callback(null, {

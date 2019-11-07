@@ -77,7 +77,7 @@ function toEvent(reservation) {
     var event = {
         start: reservation.firstday,
         end: new Date(reservation.lastday).setHours(24),
-        title: '(' + reservation.resaowner + ')',
+        title: reservation.note,
         allDay: true,
         //overlap: false,
         extendedProps: { r: reservation },
@@ -126,6 +126,7 @@ function toReservation(event) {
     r.firstday = adjustDate(event.start,13)
     r.lastday = adjustDate(event.end,-13)
     r.resaowner = event.owner
+    r.note = event.title
     return r
 }
 
@@ -139,6 +140,7 @@ function addEvent(d) {
     Tooltip.instance('resa').close();
     calendar.unselect()
     d.owner = _getUserPool().getCurrentUser().getUsername()
+    d.title = '...'
     d.extendedProps = {}
     var r = toReservation(d)
     // add the reservation to the database

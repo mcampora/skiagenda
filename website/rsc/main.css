@@ -131,6 +131,11 @@ derived from this CSS on this page: https://popper.js.org/tooltip-examples.html
     text-align: right;
 }
 
+.tooltip-note {
+  border: 1px;
+  border-style: dashed;
+}
+
 .polaroid {
   background: white;
   display: block;

@@ -11,12 +11,8 @@ exports.handler = (event, context, callback) => {
     }
     const requestBody = JSON.parse(event.body)
 
-    const params = {
-        resaid : requestBody.resa.resaid,
-        firstday : requestBody.resa.firstday,
-        lastday : requestBody.resa.lastday,
-        resaowner : event.requestContext.authorizer.claims['cognito:username']
-    }
+    const params = requestBody.resa
+    params.resaowner = event.requestContext.authorizer.claims['cognito:username']
     resa.update(params)
     .then(() => {
         callback(null, {

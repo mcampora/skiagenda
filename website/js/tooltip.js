@@ -1,8 +1,8 @@
 class Tooltip {
     static tooltips = {}
 
-    static init(id, template, openCallback, deleteCallback)  {
-        this.tooltips[id] = new Tooltip(template, openCallback, deleteCallback)
+    static init(id, template, openCallback, deleteCallback, saveCallback)  {
+        this.tooltips[id] = new Tooltip(template, openCallback, deleteCallback, saveCallback)
     }
 
     static instance(id)  {
@@ -10,10 +10,11 @@ class Tooltip {
         return this.tooltips[id]
     }
 
-    constructor(template, openCallback, deleteCallback) {
+    constructor(template, openCallback, deleteCallback, saveCallback) {
         console.log('Tooltip::constructor')
         this.template = $( '#' + template )
         this.template.hide()
+        $( "#tooltip-save", this.template ).on( "click", () => { this.save() } )
         $( "#tooltip-delete", this.template ).on( "click", () => { this.delete() } )
         $( "#tooltip-close", this.template ).on( "click", () => { this.close() } )
         this.openCallback = openCallback
@@ -34,6 +35,29 @@ class Tooltip {
         if (this.openCallback)
             this.openCallback(this, this.event)
         this.template.fadeIn()
+    }
+
+    save() {
+        console.log( 'Tooltip::save' )
+
+        // -------------
+        // save callback
+        // -------------
+        var e = this.event
+        var r = e.extendedProps.r
+        r.note = $('#tooltip-note').html()
+        e.setProp('title', r.note)
+        console.log(r)
+        updateReservation(accessToken, {resa:r})
+        // -------------
+
+        .then(d => {
+            console.log(d)
+        })
+        .catch(e => {
+            error(e)
+        })
+
     }
 
     delete() {
@@ -61,8 +85,7 @@ class Tooltip {
         $( '#tooltip-source', tooltip.template ).html(event.extendedProps.r.resaowner)
         var str = $( '#tooltip-period', tooltip.template ).html(calendar.formatRange(
             event.extendedProps.r.firstday, 
-            event.extendedProps.r.lastday, 
-            {
+            event.extendedProps.r.lastday, {
                 month: 'long',
                 year: 'numeric',
                 day: 'numeric',
@@ -70,8 +93,21 @@ class Tooltip {
                 locale: 'fr'
             }))
         $( '#tooltip-note', tooltip.template ).html(event.extendedProps.r.note)
-        $( '#tooltip-creation', tooltip.template ).html(event.extendedProps.r.creationDate)
-        $( '#tooltip-update', tooltip.template ).html(event.extendedProps.r.updateDate)
+        $( '#tooltip-creation', tooltip.template ).html(calendar.formatDate(
+            event.extendedProps.r.creationTime, {
+                month: 'long',
+                year: 'numeric',
+                day: 'numeric',
+                locale: 'fr'
+            }))
+        if (event.extendedProps.r.updateTime)
+            $( '#tooltip-update', tooltip.template ).html(calendar.formatDate(
+                event.extendedProps.r.updateTime, {
+                    month: 'long',
+                    year: 'numeric',
+                    day: 'numeric',
+                    locale: 'fr'
+                }))
         $( '#tooltip-id', tooltip.template ).html(event.extendedProps.r.resaid)
     }
 
