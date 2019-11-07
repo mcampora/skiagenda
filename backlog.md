@@ -11,4 +11,3 @@
     * a multi account setup test vs prod
     * add user functions
     * ci/cd pipeline (CodePipeline)
-    * manage the packaging dependencies

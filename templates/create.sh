@@ -1,4 +1,3 @@
-
 #export AWS_PROFILE=skiagenda-test
 export LAYER=$1
 if [ -z $LAYER ]
