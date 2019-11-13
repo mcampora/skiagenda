@@ -5,6 +5,7 @@
         * signin
         * update user
         * signout
+        * cookie and singlesignin
 * technical improvements
     * fixes
         * Calendar::toResa -> dates are translated in zulu time

@@ -13,66 +13,65 @@ function _getUserPool() {
 
 // register
 var user = null;
-function _register(id, email, pwd, onSuccess=function(){}, onFailure=function(){}) {
+function _register(id, email, pwd, onSuccess, onFailure) {
     var dataEmail = { Name : 'email', Value : email }
     var attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail)
-    //console.log("register() ->")
-    _getUserPool().signUp(id, pwd, [attributeEmail], null, function(err, result){
+    //console.log('register() ->')
+    _getUserPool().signUp(id, pwd, [attributeEmail], null, (err, result) => {
         if (err) {
             //console.log(err)
             onFailure(err)
-        }
-        else { 
+        } else { 
             user = result.user
             //console.log(result.user)
             onSuccess(result)
         }
     })
 }
-var register = (id, email, pwd) => { return new Promise(resolve => _register(id, email, pwd, resolve))}
+var register = (id, email, pwd) => { return new Promise((resolve, reject) => _register(id, email, pwd, resolve, reject)) }
 
 // confirm registration
-function _verify(id, code, next=function(){}) {
-    _createCognitoUser(id).confirmRegistration(code, true, function(err, result) {
-        //console.log('adminConfirm() ->')
+function _verify(id, code, onSuccess, onFailure) {
+    //console.log('_verify() ->')
+    _createCognitoUser(id).confirmRegistration(code, true, (err, result) => {
         if (err) {
             //console.log(err)
+            onFailure(err)
         } else {
             //console.log(result)
-            next()
+            onSuccess(result)
         }
     })
 }
+var verify = (id, code) => { return new Promise((resolve, reject) => _verify(id, code, resolve, reject))}
 
 // signin
 // ex. signin('mcm','Test#2019')
 var accessToken = null;
-function _signin(id, pwd, next=function(){}) {
+function _signin(id, pwd, onSuccess, onFailure) {
     var authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails({
         Username: id,
         Password: pwd
     })
     var cognitoUser = _createCognitoUser(id)
-    //console.log("signin() ->")
+    console.log("signin() ->",cognitoUser)
     cognitoUser.authenticateUser(authenticationDetails, {
-        onSuccess: function(result) {
+        onSuccess: (result) => {
             _getUserPool().getCurrentUser().getSession(function(e,s){
                 accessToken = s.getIdToken().getJwtToken()
                 //console.log(result)
-                next()
+                onSuccess(result)
             });
         },
-        onFailure: function(err) {
-            //console.log(err)
-        }
+        onFailure: onFailure
     })
 }
-var signin = (id, pwd) => { return new Promise(resolve => _signin(id, pwd, resolve))}
+var signin = (id, pwd) => { return new Promise((resolve, reject) => _signin(id, pwd, resolve, reject))}
 
 // helper function
-function _createCognitoUser(email) {
+function _createCognitoUser(id) {
     return new AmazonCognitoIdentity.CognitoUser({
-        Username: email,
+        Username: id,
         Pool: _getUserPool()
     })
 }
