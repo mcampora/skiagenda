@@ -47,7 +47,7 @@ var verify = (id, code) => { return new Promise((resolve, reject) => _verify(id,
 
 // signin
 // ex. signin('mcm','Test#2019')
-var accessToken = null;
+var accessToken = localStorage.getItem("accessToken")
 function _signin(id, pwd, onSuccess, onFailure) {
     var authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails({
         Username: id,
@@ -59,6 +59,7 @@ function _signin(id, pwd, onSuccess, onFailure) {
         onSuccess: (result) => {
             _getUserPool().getCurrentUser().getSession(function(e,s){
                 accessToken = s.getIdToken().getJwtToken()
+                localStorage.setItem("accessToken", accessToken)
                 //console.log(result)
                 onSuccess(result)
             });

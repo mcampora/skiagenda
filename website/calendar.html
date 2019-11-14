@@ -29,8 +29,8 @@
   <script src="js/amazon-cognito-identity.min.js"></script>
 
   <script src="js/config.js"></script>
-  <script src="js/authent.js"></script>
   <script src="js/authent-ux.js"></script>
+  <script src="js/authent.js"></script>
   <script src="js/resa.js"></script>
   <script src="js/holidays.js"></script>
   <script src="js/calendar.js"></script>
@@ -39,14 +39,14 @@
   <script>
     $( document ).ready(function() {
       // simulate signin, assumption: there's a user 'mcm' in the pool
-      signin('mcm','Test#2019')
-      .then(d=>{ 
+      //signin('mcm','Test#2019')
+      //.then(d=>{ 
         console.log(accessToken)
         createCalendar('calendar')
         Tooltip.init('resa', 'tooltip-resa', Tooltip.resaOpenCallback)
         Tooltip.init('holidays', 'tooltip-holidays')
         $('#wait').hide()
-      })
+      //})
     })
 
     function error(e) {
@@ -61,6 +61,7 @@
 
   <header class="site-header">
     <img src="rsc/auron-logo-metropole.png" class="logo" width="200"></img>
+    <a id="logoutLink" href="index.html">deconnexion</a>
   </header>
 
   <div id='alert' class="alert" style="display:none">

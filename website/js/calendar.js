@@ -137,7 +137,7 @@ function addEvent(d) {
     // all the maths and actual storage will have to consider this particular behaviour
     console.log('Calendar::addevent')
     //console.log(d)
-    Tooltip.instance('resa').close();
+    Tooltip.instance('resa').close()
     calendar.unselect()
     d.owner = _getUserPool().getCurrentUser().getUsername()
     d.title = '...'

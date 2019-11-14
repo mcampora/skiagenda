@@ -19,6 +19,7 @@ class Tooltip {
         $( "#tooltip-close", this.template ).on( "click", () => { this.close() } )
         this.openCallback = openCallback
         this.deleteCallback = deleteCallback
+        this.saveCallback = saveCallback
     }
 
     close() {
