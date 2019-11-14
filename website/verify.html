@@ -1,24 +1,34 @@
 <html>
-    <head>
-        <meta charset="utf-8">
-        <title>Ski Agenda Pet Project</title>
-    </head>
-    <body>
-        <section class="form-wrap">
-            <h1>Verifier votre enregistrement</h1>
-            <form id="verifyForm">
-              <input type="email" id="emailInputVerify" placeholder="Email" required>
-              <input type="text" id="codeInputVerify" placeholder="Verification Code" pattern=".*" required>
-              <input type="submit" value="Verifier">
-            </form>
-        </section>
+<head>
+    <meta charset="utf-8">
+    <title>Ski Agenda Pet Project</title>
+    <link rel="stylesheet" href="rsc/main.css">
+</head>
+<body>
+    <header class="site-header">
+        <img src="rsc/auron-logo-metropole.png" class="logo" width="200"></img>
+    </header>        
+    <section class="forms-section">
+        <h1 class="section-title">Verifier votre enregistrement</h1>
+        <form id="verifyForm" class="form-wrapper is-active form form-login">
+            <fieldset>
+                <div class="input-block">
+                    <input type="email" id="emailInputVerify" placeholder="Email" required>
+                </div>
+                <div class="input-block">
+                    <input type="text" id="codeInputVerify" placeholder="Verification Code" pattern=".*" required>
+                </div>
+            </fieldset>
+            <button type="submit" class="btn-login">Verifier</button>
+        </form>
         <div id="theotheroption">
             <a id="signin" href="index.html">Retour</a>
         </div>    
-        <script src="https://unpkg.com/jquery@3.4.1/dist/jquery.min.js"></script>
-        <script src="js/amazon-cognito-identity.min.js"></script>
-        <script src="js/config.js"></script>
-        <script src="js/authent-ux.js"></script>
-        <script src="js/authent.js"></script>
-    </body>
+    </section>
+    <script src="https://unpkg.com/jquery@3.4.1/dist/jquery.min.js"></script>
+    <script src="js/amazon-cognito-identity.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/authent-ux.js"></script>
+    <script src="js/authent.js"></script>
+</body>
 </html>

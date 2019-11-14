@@ -2,19 +2,31 @@
 <head>
     <meta charset="utf-8">
     <title>Ski Agenda Pet Project</title>
+    <link rel="stylesheet" href="rsc/main.css">
 </head>
 <body>
-    <section class="form-wrap">
-        <h1>Connexion</h1>
-        <form id="signinForm">
-            <input type="email" id="emailInputSignin" placeholder="Email" required>
-            <input type="password" id="passwordInputSignin" placeholder="Password" pattern=".*" required>
-            <input type="submit" value="Connexion">
+    <header class="site-header">
+        <img src="rsc/auron-logo-metropole.png" class="logo" width="200"></img>
+    </header>
+    <section class="forms-section">
+        <h1 class="section-title">Connexion</h1>
+        <form id="signinForm" class="form-wrapper is-active form form-login">
+            <fieldset>
+                <div class="input-block">
+                    <label for="emailInputSignin">Email</label>
+                    <input type="email" id="emailInputSignin" placeholder="Email" required>
+                </div>
+                <div class="input-block">
+                    <label for="passwordInputSignin">Mot de passe</label>
+                    <input type="password" id="passwordInputSignin" placeholder="Mot de passe" pattern=".*" required>
+                </div>
+            </fieldset>
+            <button type="submit" class="btn-login">Connexion</button>
         </form>
+        <div id="theotheroption">
+            <a id="register" href="register.html">S'enregistrer</a>
+        </div>
     </section>
-    <div id="theotheroption">
-        <a id="register" href="register.html">S'enregistrer</a>
-    </div>
     <script src="https://unpkg.com/jquery@3.4.1/dist/jquery.min.js"></script>
     <script src="js/amazon-cognito-identity.min.js"></script>
     <script src="js/config.js"></script>
