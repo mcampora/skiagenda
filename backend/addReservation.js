@@ -4,6 +4,7 @@ const utils = require('./local_modules/utils/index.js')
 const reservations = require('./local_modules/reservations/index.js')
 const resa = new reservations(AWS)
 
+// addReservation lambda function
 exports.handler = (event, context, callback) => {
     console.log('Received event: ', event)
     if (!event.requestContext.authorizer) {
