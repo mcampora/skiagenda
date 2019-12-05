@@ -7,6 +7,7 @@
     * styling for the user management
     * error cases for user management
     * fixes
+        * user id on email prefix
         * Calendar::toResa -> dates are translated in zulu time
     * a multi account setup test vs prod
     * add user functions
