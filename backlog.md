@@ -18,6 +18,8 @@
         * evolution yoy
     * session timeout -> redirect to the login page
 * technical improvements
+    * backup / restore scripts for the data layer / automate the backup / clean old backups
+    * integrate backup / restore in the delete / create infra scripts
     * styling for resa (largeur lines, crossed ends)
     * styling for the user management
     * error cases for user management
