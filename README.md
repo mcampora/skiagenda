@@ -14,12 +14,15 @@
         * >AWS Secret Access Key [None]: /secretkey/
         * >Default region name [None]: us-east-1
         * >Default output format [None]:
+    * check the template folder to deploy the project
+        * 
     * install http-server to test and evolve the website part of the project
         * >npm install http-server -g
         * >http-server [path] [options]
     * install jasmine to run tests and check deployment is funtional
         * >npm install -g jasmine
         * >cd test # go to the test folder
+        * >npm install # to
         * >jasmine # to launch the tests
     * data definition
         * Reservation - used to capture reservations/usage

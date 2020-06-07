@@ -5,11 +5,18 @@ then
     export LAYER='backend'
 fi
 
+export TARGET=$2
+if [ -z $TARGET ]
+then
+    export TARGET='default'
+fi
+
 # create/refresh the source bucket
 ./upload.sh
 
 # create the resources
-aws cloudformation create-stack \
+aws --profile $TARGET \
+    cloudformation create-stack \
     --capabilities CAPABILITY_IAM \
     --stack-name skiagenda-$LAYER \
     --template-body file://$LAYER.yaml 
