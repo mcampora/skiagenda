@@ -179,6 +179,9 @@ describe("Reservation test suite -", function() {
             'firstday'    : date('11'),
             'lastday'     : date('18'),
             'resaowner'   : 'marco',
+            'note'        : '...',
+            'category'    : 'familytime',
+            'revenue'     : 0,
         })
         .then(d => {
             //console.log(d)
@@ -187,12 +190,15 @@ describe("Reservation test suite -", function() {
         })
     })
 
-    it("update", function() {
+    it("2nd update", function() {
         return resa.update({
             'resaid'      : 'myspecialid',
             'firstday'    : date('26'),
             'lastday'     : date('30'),
             'resaowner'   : 'marco',
+            'note'        : '...',
+            'category'    : 'familytime',
+            'revenue'     : 0,
         })
         .then(d => {
             //console.log(d)
@@ -201,12 +207,15 @@ describe("Reservation test suite -", function() {
         })
     })
 
-    it("update", function() {
+    it("3rd update", function() {
         return resa.update({
             'resaid'      : 'myspecialid',
             'firstday'    : date('26'),
             'lastday'     : date('30'),
             'resaowner'   : 'zoro',
+            'note'        : '...',
+            'category'    : 'familytime',
+            'revenue'     : 0,
         })
         .catch(e => {
             //console.log(e)
@@ -221,6 +230,9 @@ describe("Reservation test suite -", function() {
             'firstday'    : '2016-01-07 10:00',
             'lastday'     : '2016-01-14 10:00',
             'resaowner'   : 'marco',
+            'note'        : '...',
+            'category'    : 'familytime',
+            'revenue'     : 0,
         })
         .then(d => {
             //console.log(d)
@@ -229,7 +241,10 @@ describe("Reservation test suite -", function() {
                 'firstday'    : '2016-01-08 10:00',
                 'lastday'     : '2016-01-10 10:00',
                 'resaowner'   : 'marco',
-            })
+                'note'        : '...',
+                'category'    : 'familytime',
+                'revenue'     : 0,
+                })
         })
         .then(d => {
             //console.log(d)

@@ -89,7 +89,7 @@ module.exports = class Reservations {
                 const params = {
                     TableName: 'Reservations',
                     Key: { 'resaid' : item.resaid },
-                    UpdateExpression: 'set note = :n, firstday = :b, lastday = :e, updateTime = :t, class = :c, revenue = :r',
+                    UpdateExpression: 'set note = :n, firstday = :b, lastday = :e, updateTime = :t, category = :c, revenue = :r',
                     ConditionExpression: 'resaowner = :o \
                         and (:e > :b)',
                     ExpressionAttributeValues: {
@@ -98,7 +98,7 @@ module.exports = class Reservations {
                         ':t' : new Date().toISOString(),
                         ':o' : item.resaowner,
                         ':n' : item.note,
-                        ':c' : item.class,
+                        ':c' : item.category,
                         ':r' : item.revenue
                     },
                     ReturnValues: 'ALL_NEW'
