@@ -1,3 +1,5 @@
+// TBD PUT BACK IN PLACE THE LOCALSTORAGE
+
 // API object
 var userPool = null;
 function _getUserPool() {
