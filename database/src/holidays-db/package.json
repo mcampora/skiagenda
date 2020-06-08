@@ -1,7 +1,7 @@
 {
-  "name": "reservations",
+  "name": "holidays-db",
   "version": "0.0.1",
-  "description": "Helper on top of the reservations table",
+  "description": "Helper on top of the holidays table",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,5 +9,6 @@
   "author": "mcm",
   "license": "ISC",
   "dependencies": {
+    "ical": "^0.6.0"
   }
 }

@@ -6,12 +6,7 @@ Parameters:
   SourceBucketName:
     Type: String
     Description: The name for the bucket where all static resources have been uploaded before
-    Default: skiagenda-source
-
-  WebsiteBucketName:
-    Type: String
-    Description: The name for the bucket hosting your website
-    Default: skiagenda
+    Default: skiagenda-rawdata
 
 Resources:
   # Cognito identity management
@@ -24,7 +19,6 @@ Resources:
         - email
       AutoVerifiedAttributes:
         - email
-
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Description: Cognito client app
@@ -32,127 +26,7 @@ Resources:
       ClientName: skiagenda
       UserPoolId: !Ref UserPool
       GenerateSecret: false
-
-  # Config update
-  TriggerUpdate:
-    Type: "Custom::ConfigFile"
-    Description: "Invoke a custom function to patch the website cognito config file"
-    DependsOn:
-      - "Deployment"
-    Properties:
-      ServiceToken: !GetAtt UpdateConfigFunction.Arn
-      UserPool: !Ref UserPool
-      Client: !Ref UserPoolClient
-      Region: !Ref "AWS::Region"
-      Url: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
-      Bucket: !Ref WebsiteBucketName
-  
-  UpdateConfigRole:
-    Type: AWS::IAM::Role
-    Description: "Role used by the custom function to patch the website cognito config file"
-    Properties:
-      Path: /skiagenda/
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: UpdateConfigRole
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Sid: Logging
-                Effect: Allow
-                Action:
-                  - "logs:CreateLogGroup"
-                  - "logs:CreateLogStream"
-                  - "logs:PutLogEvents"
-                Resource: "*"
-              - Sid: Cognito
-                Effect: Allow
-                Action:
-                  - "cognito-idp:CreateUserPool"
-                  - "cognito-idp:DeleteUserPool"
-                  - "cognito-idp:CreateUserPoolClient"
-                  - "cognito-idp:DeleteUserPoolClient"
-                Resource: "*"
-              - Sid: ConfigBucketWriteAccess
-                Effect: Allow
-                Action:
-                  - "s3:PutObject"
-                  - "s3:PutObjectAcl"
-                  - "s3:PutObjectVersionAcl"
-                Resource:
-                  - !Sub "arn:aws:s3:::${WebsiteBucketName}/*"
-  
-  UpdateConfigFunction:
-    Type: AWS::Lambda::Function
-    Properties:
-      Description: "the custom function used to patch the website config file"
-      Handler: index.handler
-      Runtime: python2.7
-      Role: !GetAtt UpdateConfigRole.Arn
-      Timeout: 60
-      Code:
-        ZipFile: |
-          import json
-          import boto3
-          import cfnresponse
-          s3 = boto3.resource('s3')
-          def create(properties, physical_id):
-            userPoolId = properties['UserPool']
-            clientId = properties['Client']
-            region = properties['Region']
-            bucket = properties['Bucket']
-            url = properties['Url']
-            object = s3.Object(bucket, 'js/config.js')
-            config_content = """
-          var _config = {
-              cognito: { 
-                  userPoolId: '%s', // patched
-                  userPoolClientId: '%s', 
-                  region: '%s', 
-              },
-              api: {
-                  invokeUrl: '%s',
-              }
-          };
-              """
-            config_content = config_content % (userPoolId, clientId, region, url)
-            config = s3.Object(bucket,'js/config.js')
-            config.put(Body=config_content)
-            return cfnresponse.SUCCESS, None
-          def update(properties, physical_id):
-            return create(properties, physical_id)
-          def delete(properties, physical_id):
-            return cfnresponse.SUCCESS, physical_id
-          def handler(event, context):
-            print "Received event: %s" % json.dumps(event)
-            status = cfnresponse.FAILED
-            new_physical_id = None
-            try:
-              properties = event.get('ResourceProperties')
-              physical_id = event.get('PhysicalResourceId')
-              status, new_physical_id = {
-                'Create': create,
-                'Update': update,
-                'Delete': delete
-              }.get(event['RequestType'], lambda x, y: (cfnresponse.FAILED, None))(properties, physical_id)
-            except Exception as e:
-              print "Exception: %s" % e
-              status = cfnresponse.FAILED
-            finally:
-              cfnresponse.send(event, context, status, {}, new_physical_id)
-
-  UpdateConfigLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Join ['/', ['/aws/lambda', !Ref UpdateConfigFunction]]
-      RetentionInDays: 7 # days
-              
+            
   # lambda functions
   BackendRole:
     Type: AWS::IAM::Role
@@ -177,7 +51,7 @@ Resources:
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
                 Resource: "*"
-
+  # reservations functions
   AddReservationFunction:
     Type: AWS::Lambda::Function
     Description: "The function used to insert a reservation for a given period"
@@ -190,14 +64,12 @@ Resources:
       Timeout: 60
       Code:
         S3Bucket: !Ref SourceBucketName
-        S3Key: backend/functions.zip
-
+        S3Key: services/reservations.zip
   AddReservationLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Join ['/', ['/aws/lambda', !Ref AddReservationFunction]]
       RetentionInDays: 7 # days
-
   ListReservationsFunction:
     Type: AWS::Lambda::Function
     Description: "The function used to list reservations over 3 months"
@@ -210,14 +82,12 @@ Resources:
       Timeout: 60
       Code:
         S3Bucket: !Ref SourceBucketName
-        S3Key: backend/functions.zip
-        
+        S3Key: services/reservations.zip        
   ListReservationsLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Join ['/', ['/aws/lambda', !Ref ListReservationsFunction]]
       RetentionInDays: 7 # days
-
   DeleteReservationFunction:
     Type: AWS::Lambda::Function
     Description: "The function used to delete a particular reservations"
@@ -230,14 +100,12 @@ Resources:
       Timeout: 60
       Code:
         S3Bucket: !Ref SourceBucketName
-        S3Key: backend/functions.zip
-
+        S3Key: services/reservations.zip
   DeleteReservationLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Join ['/', ['/aws/lambda', !Ref DeleteReservationFunction]]
       RetentionInDays: 7 # days
-
   UpdateReservationFunction:
     Type: AWS::Lambda::Function
     Description: "The function used to update a particular reservations"
@@ -250,14 +118,13 @@ Resources:
       Timeout: 60
       Code:
         S3Bucket: !Ref SourceBucketName
-        S3Key: backend/functions.zip
-        
+        S3Key: services/reservations.zip        
   UpdateReservationLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Join ['/', ['/aws/lambda', !Ref UpdateReservationFunction]]
       RetentionInDays: 7 # days
-
+  # holidays functions
   ListHolidaysFunction:
     Type: AWS::Lambda::Function
     Description: "The function used to list bank holidays for the 3 zones in France"
@@ -270,14 +137,12 @@ Resources:
       Timeout: 60
       Code:
         S3Bucket: !Ref SourceBucketName
-        S3Key: backend/functions.zip
-        
+        S3Key: services/holidays.zip        
   ListHolidaysLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Join ['/', ['/aws/lambda', !Ref ListHolidaysFunction]]
       RetentionInDays: 7 # days
-
   RefreshHolidaysFunction:
     Type: AWS::Lambda::Function
     Description: "The function used to list bank holidays for the 3 zones in France"
@@ -290,8 +155,7 @@ Resources:
       Timeout: 60
       Code:
         S3Bucket: !Ref SourceBucketName
-        S3Key: backend/functions.zip
-        
+        S3Key: services/holidays.zip                
   RefreshHolidaysLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -304,7 +168,6 @@ Resources:
     Description: create a REST API that will expose our lambda functions
     Properties:
       Name: skiagenda
-
   RestApiAuthorizer:
     Type: 'AWS::ApiGateway::Authorizer'
     Description: "create an authorizer that will control access to this API using the CognitoPool we created before"
@@ -319,7 +182,6 @@ Resources:
       IdentitySource: method.request.header.Authorization
       Name: skiagenda
       RestApiId: !Ref RestApi
-
   Resa:
     Type: 'AWS::ApiGateway::Resource'
     Description: "create a resource"
@@ -332,7 +194,6 @@ Resources:
         - RestApi
         - RootResourceId
       PathPart: resa
-
   Holidays:
     Type: 'AWS::ApiGateway::Resource'
     Description: "create a resource"
@@ -345,7 +206,6 @@ Resources:
         - RestApi
         - RootResourceId
       PathPart: holidays
-
   ResaOptionsMethod:
     Type: AWS::ApiGateway::Method
     Description: Enable CORS on our resource
@@ -375,7 +235,6 @@ Resources:
           method.response.header.Access-Control-Allow-Headers: true
           method.response.header.Access-Control-Allow-Methods: true
           method.response.header.Access-Control-Allow-Origin: true
-
   HolidaysOptionsMethod:
     Type: AWS::ApiGateway::Method
     Description: Enable CORS on our resource
@@ -405,7 +264,6 @@ Resources:
           method.response.header.Access-Control-Allow-Headers: true
           method.response.header.Access-Control-Allow-Methods: true
           method.response.header.Access-Control-Allow-Origin: true
-
   PostMethod:
     Type: AWS::ApiGateway::Method
     Description: "then a method"
@@ -442,7 +300,6 @@ Resources:
           StatusCode: '200'
       ResourceId: !Ref Resa
       RestApiId: !Ref RestApi
-
   ResaGetMethod:
     Type: AWS::ApiGateway::Method
     Description: "then a method"
@@ -480,7 +337,6 @@ Resources:
           StatusCode: '200'
       ResourceId: !Ref Resa
       RestApiId: !Ref RestApi
-
   HolidaysGetMethod:
     Type: AWS::ApiGateway::Method
     Description: "then a method"
@@ -518,7 +374,6 @@ Resources:
           StatusCode: '200'
       ResourceId: !Ref Holidays
       RestApiId: !Ref RestApi
-
   ResaUpdateMethod:
     Type: AWS::ApiGateway::Method
     Description: "then a method"
@@ -555,7 +410,6 @@ Resources:
           StatusCode: '200'
       ResourceId: !Ref Resa
       RestApiId: !Ref RestApi
-
   HolidaysRefreshMethod:
     Type: AWS::ApiGateway::Method
     Description: "then a method"
@@ -592,7 +446,6 @@ Resources:
           StatusCode: '200'
       ResourceId: !Ref Holidays
       RestApiId: !Ref RestApi
-
   DeleteMethod:
     Type: AWS::ApiGateway::Method
     Description: "then a method"
@@ -628,7 +481,6 @@ Resources:
           StatusCode: '200'
       ResourceId: !Ref Resa
       RestApiId: !Ref RestApi
-
   Deployment:
     Type: AWS::ApiGateway::Deployment
     Description: "then a deployemt & stage"
@@ -644,7 +496,6 @@ Resources:
     Properties:
       RestApiId: !Ref RestApi
       StageName: prod
-
   InvokeResaGetPermission:
     Type: "AWS::Lambda::Permission"
     Description: "grant the API gateway the right to invoke listReservationsFunction"
@@ -655,7 +506,6 @@ Resources:
       FunctionName: !GetAtt "ListReservationsFunction.Arn"
       Principal: "apigateway.amazonaws.com"
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/GET/resa"
-
   InvokeHolidaysGetPermission:
     Type: "AWS::Lambda::Permission"
     Description: "grant the API gateway the right to invoke listReservationsFunction"
@@ -666,7 +516,6 @@ Resources:
       FunctionName: !GetAtt "ListHolidaysFunction.Arn"
       Principal: "apigateway.amazonaws.com"
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/GET/holidays"
-
   InvokeResaPostPermission:
     Type: "AWS::Lambda::Permission"
     Description: "grant the API gateway the right to invoke addReservationFunction"
@@ -677,7 +526,6 @@ Resources:
       FunctionName: !GetAtt "AddReservationFunction.Arn"
       Principal: "apigateway.amazonaws.com"
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/POST/resa"
-
   InvokeHolidaysPutPermission:
     Type: "AWS::Lambda::Permission"
     Description: "grant the API gateway the right to invoke addReservationFunction"
@@ -688,7 +536,6 @@ Resources:
       FunctionName: !GetAtt "RefreshHolidaysFunction.Arn"
       Principal: "apigateway.amazonaws.com"
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/PUT/holidays"
-
   InvokePutPermission:
     Type: "AWS::Lambda::Permission"
     Description: "grant the API gateway the right to invoke updateReservationFunction"
@@ -699,7 +546,6 @@ Resources:
       FunctionName: !GetAtt "UpdateReservationFunction.Arn"
       Principal: "apigateway.amazonaws.com"
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/PUT/resa"
-
   InvokeDeletePermission:
     Type: "AWS::Lambda::Permission"
     Description: "grant the API gateway the right to invoke deleteReservationFunction"
@@ -714,3 +560,13 @@ Resources:
 Outputs:
   apiURL:
     Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/prod/resa"
+    Export:
+      Name: apiURL
+  userPoolId: 
+    Value: !Ref UserPool
+    Export:
+      Name: userPoolId
+  userPollClientId: 
+    Value: !Ref UserPoolClient
+    Export:
+      Name: userPollClientId

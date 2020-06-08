@@ -15,19 +15,6 @@ Resources:
       ProvisionedThroughput: 
         ReadCapacityUnits: "5"
         WriteCapacityUnits: "5"
-  Users:
-    Type: AWS::DynamoDB::Table
-    Properties: 
-      TableName: "Users"
-      AttributeDefinitions: 
-        - AttributeName: "userid"
-          AttributeType: "S"
-      KeySchema: 
-        - AttributeName: "userid"
-          KeyType: "HASH"
-      ProvisionedThroughput: 
-        ReadCapacityUnits: "5"
-        WriteCapacityUnits: "5"
   Holidays:
     Type: AWS::DynamoDB::Table
     Properties: 

@@ -1,4 +1,4 @@
 **/node_modules
 **/package-lock.json
-backend/functions.zip
+**/*.zip
 test/localconfig.js

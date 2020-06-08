@@ -1,6 +1,6 @@
 var AWS = require('aws-sdk') // Load the AWS SDK for Node.js
 AWS.config.update({region: 'us-east-1'}) // Set the region 
-const Holidays = require('holidays')
+const Holidays = require('holidays-db')
 const holidays = new Holidays(AWS)
 
 describe("Holidays dB test suite -", function() {
