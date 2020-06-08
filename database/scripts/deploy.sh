@@ -7,11 +7,7 @@ fi
 
 # create the database
 aws --profile $TARGET \
-    cloudformation create-stack \
+    cloudformation deploy \
     --capabilities CAPABILITY_IAM \
     --stack-name skiagenda-database \
-    --template-body file://database.yaml 
-
-# wait for completion
-aws cloudformation wait stack-create-complete \
-    --stack-name skiagenda-database
+    --template-file ./database.yaml 

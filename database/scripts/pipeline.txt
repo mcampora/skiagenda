@@ -1,0 +1,11 @@
+my ci/cd/cd automation could look like this:
+
+push on master
+    deploy.sh (update the database deployment on test)
+    clean.sh (empty the tables)
+    tests.sh (run the tests)
+    (create a pull request)
+pull request accepted
+    backup.sh prod (better be safe)
+    deploy.sh prod (update the database deployment in prod)
+    (brush tests)
