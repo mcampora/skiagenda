@@ -11,6 +11,7 @@
   "dependencies": {
     "holidays": "file:../src/holidays",
     "reservations": "file:../src/reservations",
+    "client": "file:../src/client",
     "amazon-cognito-identity-js": "^3.2.0",
     "aws-sdk": "^2.566.0",
     "ical": "^0.6.0",

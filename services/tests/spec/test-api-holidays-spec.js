@@ -1,7 +1,7 @@
 // import the various sdks
-const AmazonCognitoIdentity = require('amazon-cognito-identity-js')
+const AmazonCognitoIdentity = require('amazon-cognito-identity-js');
 global.fetch = require('node-fetch');
-const fs = require('fs')
+const fs = require('fs');
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 const { window } = new JSDOM();
@@ -9,12 +9,12 @@ const { document } = (new JSDOM('')).window;
 global.document = document;
 const $ = jQuery = require('jquery')(window);
 const aws = require('aws-sdk');
-const https = require('http')
+const https = require('http');
 
 // import the application files
-eval(fs.readFileSync('../src/client/config.js').toString())
-eval(fs.readFileSync('../src/client/authent.js').toString())
-eval(fs.readFileSync('../src/client/services.js').toString())
+eval(fs.readFileSync('../src/client/config.js').toString());
+eval(fs.readFileSync('../src/client/authent.js').toString());
+eval(fs.readFileSync('../src/client/services.js').toString());
 
 //
 // the test suite

@@ -56,7 +56,7 @@ function _signin(id, pwd, onSuccess, onFailure) {
         Password: pwd
     })
     var cognitoUser = _createCognitoUser(id)
-    console.log("signin() ->",cognitoUser)
+    //console.log("signin() ->",cognitoUser)
     cognitoUser.authenticateUser(authenticationDetails, {
         onSuccess: (result) => {
             _getUserPool().getCurrentUser().getSession(function(e,s){

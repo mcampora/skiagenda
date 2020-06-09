@@ -5,6 +5,6 @@ var _config = {
         region: 'us-east-1', 
     },
     api: {
-        invokeUrl: 'https://jbdiwypjaj.execute-api.us-east-1.amazonaws.com/prod/resa',
+        invokeUrl: 'https://jbdiwypjaj.execute-api.us-east-1.amazonaws.com/prod',
     }
 };

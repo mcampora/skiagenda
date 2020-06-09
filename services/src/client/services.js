@@ -1,8 +1,8 @@
 // ajax help[er for reservation APIs/lambdas
 function _ajax(token, rsc, method, params) {
-  //console.log(rsc + ' ->')
+  //console.log(_config.api.invokeUrl)
+  //console.log(rsc + '/' + method + ' ->')
   //console.log(token)
-  //console.log(params)
   //console.log(params)
   return $.ajax({
       method: method,

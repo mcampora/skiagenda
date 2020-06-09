@@ -559,7 +559,7 @@ Resources:
 
 Outputs:
   apiURL:
-    Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/prod/resa"
+    Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
     Export:
       Name: apiURL
   userPoolId: 

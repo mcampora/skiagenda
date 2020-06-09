@@ -15,3 +15,4 @@
         * user id on email prefix
         * Calendar::toResa -> dates are translated in zulu time
     * a multi account setup test vs prod or green / blue deployment
+    * enable CloudWatch loging for the API gateway in the CloudFormation template (today done manually)

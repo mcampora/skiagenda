@@ -12,8 +12,9 @@ const aws = require('aws-sdk');
 const https = require('http')
 
 // import the application files
-eval(fs.readFileSync('../website/js/authent.js').toString())
-eval(fs.readFileSync('../website/js/resa.js').toString())
+eval(fs.readFileSync('../src/client/config.js').toString());
+eval(fs.readFileSync('../src/client/authent.js').toString());
+eval(fs.readFileSync('../src/client/services.js').toString());
 
 //
 // the test suite
@@ -21,10 +22,8 @@ eval(fs.readFileSync('../website/js/resa.js').toString())
 describe("Test Resa API -", function() {
 
     it("fetch client config", function() {
-      return getConfig().then(() => {
-        expect(_config).not.toBe(null)
-        expect(_config.api.invokeUrl).not.toBe(null)
-      })
+      expect(_config).not.toBe(null)
+      expect(_config.api.invokeUrl).not.toBe(null)
     })
 
     it("clean up the test user", function() {
@@ -53,7 +52,7 @@ describe("Test Resa API -", function() {
     })
 
     var gresaid = null
-    it("create of a basic reservation", function() {
+    it("create a basic reservation", function() {
       const firstday = '2013-01-07 10:00'
       const lastday = '2013-01-14 10:00' 
       return addReservation(accessToken,{resa:{firstday:firstday,lastday:lastday}})
@@ -92,7 +91,7 @@ describe("Test Resa API -", function() {
       const lastday = '2013-01-10 10:00' 
       //const firstday = '2013-01-15 10:00'
       //const lastday = '2013-01-20 10:00' 
-      const resa = {resa:{resaid:gresaid,firstday:firstday,lastday:lastday}}
+      const resa = {resa:{resaid:gresaid,firstday:firstday,lastday:lastday,note:'',category:'rental',revenue:600}}
       return updateReservation(accessToken,resa)
       .then(d => {
         //console.log(d)
@@ -155,35 +154,4 @@ function _confirmUser(id, next) {
     })
 }
 var confirmUser = id => { return new Promise(resolve => _confirmUser(id, resolve)) }
-
-// download the modified config file to know the endpoints
-function _getConfig(onSuccess,onFailure) {
-    if (fs.existsSync('localconfig.js')) {
-        fs.readFile('localconfig.js',
-            // callback function that is called when reading file is done
-            function(err, data) { 
-                if (err) throw err;
-                // data is a buffer containing file content
-                (0,eval)(data.toString('utf8'))
-                onSuccess() 
-            }
-        )
-    }
-    else {
-        const options = {
-            hostname: 'skiagenda.s3-website-us-east-1.amazonaws.com',
-            path: '/js/config.js',
-        }
-        const req = https.request(options, res => {
-            res.on('data', d => { 
-                (0,eval)(d.toString())
-                fs.writeFile('localconfig.js', d.toString(), ()=>{})
-                onSuccess() 
-            })
-        })
-        req.on('error', error => { onFailure(error) })
-        req.end()
-    }
-}
-var getConfig = () => { return new Promise((onfullfilled,onFailure) => _getConfig(onfullfilled,onFailure)) }
 
