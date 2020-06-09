@@ -46,6 +46,10 @@ class Tooltip {
         // -------------
         var e = this.event
         var r = e.extendedProps.r
+
+        r.category = $('#tooltip-category')[0].value
+        r.revenue = $('#tooltip-revenue')[0].value
+
         r.note = $('#tooltip-note').html()
         e.setProp('title', r.note)
         console.log(r)
@@ -93,6 +97,10 @@ class Tooltip {
                 separator: ' au ',
                 locale: 'fr'
             }))
+        
+        $( '#tooltip-category', tooltip.template )[0].value = event.extendedProps.r.category
+        $( '#tooltip-revenue', tooltip.template )[0].value = event.extendedProps.r.revenue
+
         $( '#tooltip-note', tooltip.template ).html(event.extendedProps.r.note)
         $( '#tooltip-creation', tooltip.template ).html(calendar.formatDate(
             event.extendedProps.r.creationTime, {

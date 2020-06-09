@@ -28,11 +28,10 @@
   <!--script src="https://unpkg.com/amazon-cognito-identity-js@3.0.3/dist/amazon-cognito-identity.min.js"></script-->
   <script src="js/amazon-cognito-identity.min.js"></script>
 
-  <script src="js/config.js"></script>
+  <script src="js/node_modules/client/config.js"></script>
   <script src="js/authent-ux.js"></script>
-  <script src="js/authent.js"></script>
-  <script src="js/resa.js"></script>
-  <script src="js/holidays.js"></script>
+  <script src="js/node_modules/client/authent.js"></script>
+  <script src="js/node_modules/client/services.js"></script>
   <script src="js/calendar.js"></script>
   <script src="js/tooltip.js"></script>
 
@@ -97,12 +96,24 @@
       </button>
     </div>
     <table>
+      <tr><td>category:</td>
+        <td>
+          <select id="tooltip-category">
+            <option value="family">family time</option>
+            <option value="rented">rented</option>
+            <option value="shared">shared</option>
+          </select>
+        </td>
+      </tr>
       <tr>
         <td>note:</td>
         <td class="tooltip-note">
           <span id="tooltip-note" contenteditable="true">...</span>
         </td>
-      </tr> 
+      </tr>
+      <tr><td>revenue:</td>
+        <td><input id="tooltip-revenue" type="number"/><span> EUR</span></td>
+      </tr>
       <tr>
         <td>source:</td><td><span id="tooltip-source">mcm</span></td>
       </tr>
