@@ -11,5 +11,5 @@ aws --profile $TARGET \
     --stack-name skiagenda-services
 
 # wait for completion
-aws cloudformation wait stack-delete-complete \
+aws --profile $TARGET cloudformation wait stack-delete-complete \
     --stack-name skiagenda-services

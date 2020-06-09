@@ -22,8 +22,8 @@ pushd .
 popd
 
 # upload/synchronize content
-aws s3 sync ../src s3://$BUCKET_NAME
+aws --profile $TARGET s3 sync ../src s3://$BUCKET_NAME
 
 ## extract output variables
-export url=`aws cloudformation describe-stacks --stack-name skiagenda-website --query "Stacks[0].Outputs[?OutputKey=='websiteURL'].OutputValue" --output text`
+export url=`aws --profile $TARGET cloudformation describe-stacks --stack-name skiagenda-website --query "Stacks[0].Outputs[?OutputKey=='websiteURL'].OutputValue" --output text`
 echo $url
