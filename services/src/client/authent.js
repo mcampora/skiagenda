@@ -49,8 +49,7 @@ var verify = (id, code) => { return new Promise((resolve, reject) => _verify(id,
 
 // signin
 // ex. signin('mcm','Test#2019')
-var accessToken = null;
-accessToken = localStorage.getItem("accessToken")
+var accessToken =  localStorage.getItem("accessToken");
 function _signin(id, pwd, onSuccess, onFailure) {
     var authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails({
         Username: id,

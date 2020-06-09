@@ -13,6 +13,12 @@ module.exports = class Reservations {
             //console.log(d)
             if (d.Count == 0) {
                 item.creationTime = new Date().toISOString()
+                if (!item.category) {
+                    item.category = 'family';
+                }
+                if (!item.revenue) {
+                    item.revenue = 0;
+                }
                 const params = {
                     TableName: 'Reservations',
                     Item: item,
@@ -54,7 +60,15 @@ module.exports = class Reservations {
             TableName: 'Reservations',
             Key: { 'resaid' : key }
         }
-        return this.ddb.get(params).promise()
+        return this.ddb.get(params).promise((item)=>{ 
+            if (!item.category) {
+                item.category = 'family';
+            }
+            if (!item.revenue) {
+                item.revenue = 0;
+            }
+            return new Promise()
+        })
     }
 
     // list records for the provided month (plus and minus one)
@@ -74,7 +88,17 @@ module.exports = class Reservations {
                 ':e' : e.toISOString(),
             }
         }
-        return this.ddb.scan(params).promise()
+        return this.ddb.scan(params).promise((items)=>{
+            items.forEach(item => {
+                if (!item.category) {
+                    item.category = 'family';
+                }
+                if (!item.revenue) {
+                    item.revenue = 0;
+                }
+            });
+            return new Promise()
+        })
     }
 
     // update a record, provided the user corresponds to the one used at creation time

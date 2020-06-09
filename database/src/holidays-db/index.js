@@ -44,10 +44,10 @@ module.exports = class Holidays {
     // import current and next year schedule
     // for a given area (A, B, C)
     import(zone, url) {
-        console.log("Holidays::import")
+        //console.log("Holidays::import")
         return this.getCalendar(url)
         .then(d => {
-            console.log(d)
+            //console.log(d)
             var hid = 1
             var params = {
                 RequestItems: {
@@ -69,11 +69,11 @@ module.exports = class Holidays {
                     }
                 })
             })
-            console.log(JSON.stringify(params))
+            //console.log(JSON.stringify(params))
             return this.db.batchWriteItem(params).promise()
         })
         .catch(e => {
-            console.log(e)
+            //console.log(e)
             return Promise.reject(e)
         })
     }

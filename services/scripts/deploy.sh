@@ -29,7 +29,12 @@ aws --profile $TARGET \
     --template-file ./services.yaml 
 
 ## add lambdas forced refresh
-## TBD
+aws lambda update-function-code --function-name AddReservationFunction --s3-bucket skiagenda-rawdata --s3-key services/reservations.zip
+aws lambda update-function-code --function-name UpdateReservationFunction --s3-bucket skiagenda-rawdata --s3-key services/reservations.zip
+aws lambda update-function-code --function-name DeleteReservationFunction --s3-bucket skiagenda-rawdata --s3-key services/reservations.zip
+aws lambda update-function-code --function-name ListReservationsFunction --s3-bucket skiagenda-rawdata --s3-key services/reservations.zip
+aws lambda update-function-code --function-name RefreshHolidaysFunction --s3-bucket skiagenda-rawdata --s3-key services/holidays.zip
+aws lambda update-function-code --function-name ListHolidaysFunction --s3-bucket skiagenda-rawdata --s3-key services/holidays.zip
 
 ## extract output variables
 export apiURL=`aws cloudformation describe-stacks --stack-name skiagenda-services  --query "Stacks[0].Outputs[?OutputKey=='apiURL'].OutputValue" --output text`

@@ -11,6 +11,13 @@ const $ = jQuery = require('jquery')(window);
 const aws = require('aws-sdk');
 const https = require('http');
 
+if (!localStorage) { 
+  var localStorage = { 
+      getItem: (k)=>{ return this[k]; },
+      setItem: (k,v)=>{ this[k]=v; }
+  }; 
+}
+
 // import the application files
 eval(fs.readFileSync('../src/client/config.js').toString());
 eval(fs.readFileSync('../src/client/authent.js').toString());
@@ -57,7 +64,7 @@ describe("Test Holidays API -", function() {
         b: 'https://www.data.gouv.fr/en/datasets/r/139ef8d5-f2ae-41fc-bc3a-d0e90a9ab7ad',
         c: 'https://www.data.gouv.fr/en/datasets/r/17254f2a-a611-4b1f-995c-df45a4570f12'})
       .then(d => {
-          console.log(d)
+          //console.log(d)
           //expect(d).toEqual([])
       })
     })

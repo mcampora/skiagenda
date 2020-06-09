@@ -103,6 +103,8 @@ describe("Reservation test suite -", function() {
             expect(d).not.toBe(null)
             expect(d.Item).not.toBe(null)
             expect(d.Item.resaid).toBe('myspecialid')
+            expect(d.Item.category).toBe('family')
+            expect(d.Item.revenue).toBe(0)
         })
     })
 
@@ -112,6 +114,8 @@ describe("Reservation test suite -", function() {
             //console.log(d)
             expect(d).not.toBe(null)
             expect(d.Count).toBeGreaterThan(2)
+            expect(d.Items[0].category).toBe('family')
+            expect(d.Items[0].revenue).toBe(0)
         })
     })
 

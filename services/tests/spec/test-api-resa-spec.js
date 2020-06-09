@@ -11,6 +11,13 @@ const $ = jQuery = require('jquery')(window);
 const aws = require('aws-sdk');
 const https = require('http')
 
+if (!localStorage) { 
+  var localStorage = { 
+      getItem: (k)=>{ return this[k]; },
+      setItem: (k,v)=>{ this[k]=v; }
+  }; 
+}
+
 // import the application files
 eval(fs.readFileSync('../src/client/config.js').toString());
 eval(fs.readFileSync('../src/client/authent.js').toString());

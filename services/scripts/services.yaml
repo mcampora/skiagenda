@@ -58,6 +58,7 @@ Resources:
     DependsOn:
       - "BackendRole"
     Properties:
+      FunctionName: AddReservationFunction
       Handler: addReservation.handler
       Runtime: nodejs10.x
       Role: !GetAtt BackendRole.Arn
@@ -76,6 +77,7 @@ Resources:
     DependsOn:
       - "BackendRole"
     Properties:
+      FunctionName: ListReservationsFunction
       Handler: listReservations.handler
       Runtime: nodejs10.x
       Role: !GetAtt BackendRole.Arn
@@ -94,6 +96,7 @@ Resources:
     DependsOn:
       - "BackendRole"
     Properties:
+      FunctionName: DeleteReservationFunction
       Handler: deleteReservation.handler
       Runtime: nodejs10.x
       Role: !GetAtt BackendRole.Arn
@@ -112,6 +115,7 @@ Resources:
     DependsOn:
       - "BackendRole"
     Properties:
+      FunctionName: UpdateReservationFunction
       Handler: updateReservation.handler
       Runtime: nodejs10.x
       Role: !GetAtt BackendRole.Arn
@@ -131,6 +135,7 @@ Resources:
     DependsOn:
       - "BackendRole"
     Properties:
+      FunctionName: ListHolidaysFunction
       Handler: listHolidays.handler
       Runtime: nodejs10.x
       Role: !GetAtt BackendRole.Arn
@@ -149,6 +154,7 @@ Resources:
     DependsOn:
       - "BackendRole"
     Properties:
+      FunctionName: RefreshHolidaysFunction
       Handler: refreshHolidays.handler
       Runtime: nodejs10.x
       Role: !GetAtt BackendRole.Arn

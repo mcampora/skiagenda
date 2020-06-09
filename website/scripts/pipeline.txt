@@ -1,0 +1,9 @@
+my ci/cd/cd automation could look like this:
+
+push on master
+    deploy.sh (retrieve services client and upload content to the S3 bucket)
+    (brush tests)
+    (create a pull request)
+pull request accepted
+    deploy.sh prod (update the website in prod)
+    (brush tests)
