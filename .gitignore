@@ -2,3 +2,5 @@
 **/package-lock.json
 **/*.zip
 test/localconfig.js
+.DS_Store
+website/app/.eslintcache
