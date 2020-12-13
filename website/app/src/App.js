@@ -21,13 +21,17 @@ import pink from '@material-ui/core/colors/pink';
 import PowerSettingsNewIcon from '@material-ui/icons/PowerSettingsNew';
 import DarkIcon from '@material-ui/icons/Brightness3';
 import LightIcon from '@material-ui/icons/Brightness5';
+import Container from '@material-ui/core/Container';
 
 import { User } from './User/User.js';
+import { Calendar } from './Calendar/Calendar.js';
 
+var theme = null;
 const useStyles = makeStyles((theme) => ({
   title: {
     flexGrow: 1,
     padding: '24px',
+    paddingTop: '24px'
   },
   logo: {
   }
@@ -90,18 +94,10 @@ function Banner(props) {
   );
 }
 
-function Calendar() {
-  return (
-    <div>
-      <Typography>Calendar</Typography>
-    </div>
-  );
-}
-
 function Body(props) {
   const loggedIn = props.loggedIn;
   return (
-    <div>
+    <Container maxWidth="xl">
     <Router>
       <RSwitch>
         <Route path="/user">
@@ -112,14 +108,13 @@ function Body(props) {
         </Route>
       </RSwitch>
     </Router> 
-    </div>
+    </Container>
   );
 }
 
 function App() {
   // user state and event handlers
   const [loggedIn, setLoggedIn] = React.useState(true);
-  const [userId, setUserId] = React.useState('mcampora@gmail.com');
   const handleLogin = () => {
     setLoggedIn(true);
   };
@@ -130,7 +125,8 @@ function App() {
   // selected theme and event handler
   const [darkState, setDarkState] = React.useState(true);
   const paletteType = darkState ? "dark" : "light";  
-  const theme = createMuiTheme({
+  theme = createMuiTheme({
+    spacing: 8,
     palette: {
       type: paletteType,
       primary: {
@@ -149,7 +145,7 @@ function App() {
     <ThemeProvider theme={theme}>
       <React.Fragment>
         <CssBaseline />
-        <Banner userId={userId} loggedIn={loggedIn} handleLogout={handleLogout} darkState={darkState} handleThemeChange={handleThemeChange} />
+        <Banner loggedIn={loggedIn} handleLogout={handleLogout} darkState={darkState} handleThemeChange={handleThemeChange} />
         <Body loggedIn={loggedIn} handleLogin={handleLogin} />
       </React.Fragment>
     </ThemeProvider>

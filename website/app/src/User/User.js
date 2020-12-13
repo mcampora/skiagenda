@@ -13,8 +13,7 @@ import {
     Switch as RSwitch,
     Route,
     Link as RouterLink,
-    Redirect
-  } from "react-router-dom";
+} from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -143,7 +142,7 @@ function SignIn(props) {
 function SignUp() {
     const classes = useStyles();
     return (
-      <UserScreen title="Sign up" action="/user/verify">
+      <UserScreen title="Sign up" action="/user/signupverify">
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <TextField
@@ -168,6 +167,18 @@ function SignUp() {
               autoComplete="current-password"
             />
           </Grid>
+          <Grid item xs={12}>
+            <TextField
+              variant="outlined"
+              required
+              fullWidth
+              name="password2"
+              label="Verify password"
+              type="password"
+              id="password2"
+              autoComplete="current-password"
+            />
+          </Grid>
         </Grid>
         <Button
           type="submit"
@@ -189,16 +200,10 @@ function SignUp() {
     );
 }
   
-function Verify() {
-    return (
-      <UserScreen title="Verify"></UserScreen>
-    );
-}
-  
 function ForgotPassword() {
     const classes = useStyles();
     return (
-      <UserScreen title="Reset my password">
+      <UserScreen title="Reset my password" action="/user/passwordverify">
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <TextField
@@ -223,22 +228,33 @@ function ForgotPassword() {
         >
           Change password
         </Button>
-        <Grid container>
-          <Grid item xs>
-            <Link component={RouterLink} to="/checkyouremails">Check your emails</Link>
-          </Grid>
-        </Grid>
       </UserScreen>
     );
 }
   
-function CheckYourEmails() {
-    return (
-      <UserScreen title="We sent you an email"></UserScreen>
-    );
+function Verify(props) {
+  return (
+    <UserScreen title="Check your mailbox">
+      <Typography>{props.children}</Typography>
+    </UserScreen>
+  );
 }
-  
-function ResetPassword() {
+
+function SignupVerify(props) {
+  return (<Verify>We sent you an email, click on the link we provided to finalize the signup!</Verify>);
+}
+
+function PasswordVerify(props) {
+  return (<Verify>We sent you an email, click on the link we provided to enter a new password!</Verify>);
+}
+
+function SignupFinalize() {
+  return (
+    <UserScreen title="Change your password"></UserScreen>
+  );
+}
+
+function PasswordFinalize() {
     return (
       <UserScreen title="Change your password"></UserScreen>
     );
@@ -249,11 +265,14 @@ export function User(props) {
       <React.Fragment>
       <Router>
         <RSwitch>
-        <Route path="/user/signup">
+          <Route path="/user/signup">
             <SignUp {...props}/>
           </Route>
-          <Route path="/user/verify">
-            <Verify {...props}/>
+          <Route path="/user/signupverify">
+            <SignupVerify {...props}/>
+          </Route>
+          <Route path="/user/passwordverify">
+            <PasswordVerify {...props}/>
           </Route>
           <Route path="/user/forgotpassword">
             <ForgotPassword {...props}/>

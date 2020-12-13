@@ -11,10 +11,17 @@ It also relies on [material ui](https://material-ui.com/getting-started/installa
 Added [React Router](https://github.com/ReactTraining/react-router) as well to declare and manage transitions between components.
 >npm install react-router-dom
 
+Added [fullcalendar](https://fullcalendar.io/docs/react).
+>npm install --save @fullcalendar/react @fullcalendar/daygrid @fullcalendar/interaction
+
 ## todo
-* add Verify screen
-* finalize the user flows
-* add Calendar screen
+* recreate popup vacations
+* recreate popup block
+* create a home page and navigation
+    * sidebar
+    * dashboard with various type of highlights (next event, occupation rate, generated revenue)
+* language selector
+* finalize the user flows / add steppers
 * wire user events (login / logout)
 * reintegrate with the backend (ie. Cognito and the API Gateway)
 
