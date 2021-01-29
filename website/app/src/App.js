@@ -1,78 +1,74 @@
-//import logo from './logo.svg';
-import React from 'react';
+import React, { useState } from 'react';
+
 import './App.css';
+
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Typography from '@material-ui/core/Typography';
-import Link from '@material-ui/core/Link';
 import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
-import {
-  BrowserRouter as Router,
-  Switch as RSwitch,
-  Route,
-  Link as RouterLink,
-  Redirect
-} from "react-router-dom";
 import blue from '@material-ui/core/colors/blue';
 import pink from '@material-ui/core/colors/pink';
 import PowerSettingsNewIcon from '@material-ui/icons/PowerSettingsNew';
 import DarkIcon from '@material-ui/icons/Brightness3';
 import LightIcon from '@material-ui/icons/Brightness5';
-import Container from '@material-ui/core/Container';
 
-import { User } from './User/User.js';
+import Amplify, { Auth } from 'aws-amplify';
+import { Authenticator, SignIn, ConfirmSignIn, VerifyContact, ForgotPassword, RequireNewPassword, SignUp, ConfirmSignUp } from 'aws-amplify-react';
+import awsconfig from './aws-exports';
+import amplifyTheme from './amplifyTheme'
+
 import { Calendar } from './Calendar/Calendar.js';
+
+Amplify.configure(awsconfig);
 
 var theme = null;
 const useStyles = makeStyles((theme) => ({
   title: {
     flexGrow: 1,
+    textAlign: 'center',
     padding: '24px',
     paddingTop: '24px'
   },
   logo: {
+    width: '150px',
   }
 }));
 
 function Logo() {
   const classes = useStyles();
-  return (
-    <img src="/logo.png" classes={classes.logo} width="150" alt="logo"></img>
-  );
+  return ( <img src="/logo.png" className={classes.logo} alt="logo"></img> );
+}
+
+async function signOut() {
+  try {
+      await Auth.signOut();
+  } catch (error) {
+      console.log('error signing out: ', error);
+  }
 }
 
 function UserMenu(props) {
-  const loggedIn = props.loggedIn;
-  const handleLogout = props.handleLogout;
+  const { loggedIn } = props;  
   return (
     <React.Fragment>
-      {loggedIn && (
-        <div>
-          <IconButton
-            onClick={handleLogout}
-            color="inherit"
-          >
+      { loggedIn && (
+          <IconButton onClick={ signOut } color="inherit" >
             <PowerSettingsNewIcon />
           </IconButton>
-        </div>
       )}  
     </React.Fragment>
   );
 }
 
 function ThemeSwitch(props) {
-  const darkState = props.darkState;
-  const handleThemeChange = props.handleThemeChange;
+  const { darkState, handleThemeChange } = props;
   return (
     <React.Fragment>
-      <IconButton onClick={handleThemeChange} color="inherit">
-        {darkState 
-          ? <LightIcon /> 
-          : <DarkIcon /> 
-        }
+      <IconButton onClick={handleThemeChange} color="inherit" >
+        { darkState ? <LightIcon /> : <DarkIcon /> }
       </IconButton>
     </React.Fragment>
   );
@@ -95,35 +91,28 @@ function Banner(props) {
 }
 
 function Body(props) {
-  const loggedIn = props.loggedIn;
-  return (
-    <Container maxWidth="xl">
-    <Router>
-      <RSwitch>
-        <Route path="/user">
-          <User {...props}/>
-        </Route>
-        <Route path="/">
-          {loggedIn?<Calendar/>:<Redirect to="/user/signin"/>}
-        </Route>
-      </RSwitch>
-    </Router> 
-    </Container>
-  );
+  //const { loggedIn } = props;
+  return ( <Calendar/> );
 }
+
+const authTheme = amplifyTheme;
 
 function App() {
   // user state and event handlers
-  const [loggedIn, setLoggedIn] = React.useState(true);
-  const handleLogin = () => {
-    setLoggedIn(true);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const handleAuthStateChange = (state) => {
+    console.log(state);
+    if (state === 'signedIn') {
+      /* Do something when the user has signed-in */
+      setLoggedIn(true);
+    }
+    else {
+      setLoggedIn(false);
+    }
   };
-  const handleLogout = () => {
-    setLoggedIn(false);
-  };
-
+  
   // selected theme and event handler
-  const [darkState, setDarkState] = React.useState(true);
+  const [darkState, setDarkState] = useState(true);
   const paletteType = darkState ? "dark" : "light";  
   theme = createMuiTheme({
     spacing: 8,
@@ -135,21 +124,52 @@ function App() {
       secondary: {
         main: pink[500],
       }
-    }
+    },
   });
   const handleThemeChange = () => {
     setDarkState(!darkState);
   };
 
+
   return (
-    <ThemeProvider theme={theme}>
-      <React.Fragment>
-        <CssBaseline />
-        <Banner loggedIn={loggedIn} handleLogout={handleLogout} darkState={darkState} handleThemeChange={handleThemeChange} />
-        <Body loggedIn={loggedIn} handleLogin={handleLogin} />
-      </React.Fragment>
-    </ThemeProvider>
+    <ThemeProvider theme={ theme }>
+      <CssBaseline />
+      <Banner loggedIn={loggedIn} darkState={darkState} handleThemeChange={handleThemeChange} />
+      {loggedIn === false ? (
+        <div style={{ 
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh'
+          }}>
+          <Authenticator hideDefault={ true } onStateChange={ handleAuthStateChange } theme={ authTheme } >
+            <SignIn />
+            <ConfirmSignIn/>
+            <VerifyContact/>
+            <SignUp />
+            <ConfirmSignUp />
+            <ForgotPassword/>
+            <RequireNewPassword />
+          </Authenticator>
+        </div>
+      ) : (
+        <Body />
+      )}
+      </ThemeProvider>
   );
-}
+    /*{ loggedIn 
+        ?
+        <Body loggedIn={loggedIn} handleLogin={handleLogin} />
+        :
+        <AmplifyAuthenticator onStateChange={ handleAuthStateChange }>
+          <AlwaysOn />
+          <div style={{ 
+            display: 'flex',
+            justifyContent: 'center' }}>
+            <AmplifySignIn />
+          </div>
+        </AmplifyAuthenticator>
+      }
+    */}
 
 export default App;

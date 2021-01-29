@@ -14,6 +14,8 @@ Added [React Router](https://github.com/ReactTraining/react-router) as well to d
 Added [fullcalendar](https://fullcalendar.io/docs/react).
 >npm install --save @fullcalendar/react @fullcalendar/daygrid @fullcalendar/interaction
 
+https://docs.amplify.aws/lib/auth/getting-started/q/platform/js#configure-your-application
+
 ## todo
 * recreate popup vacations
 * recreate popup block

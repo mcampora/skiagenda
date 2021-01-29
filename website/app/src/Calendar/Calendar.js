@@ -17,7 +17,7 @@ import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import MenuItem from '@material-ui/core/MenuItem';
 
-var theme = null;
+//var theme = null;
 const useStyles = makeStyles((theme) => ({
   calendar: {
     flexGrow: 1,
@@ -75,7 +75,7 @@ function HolidaysPopup(props) {
     return (
         <MyDialog title="Vacances" {...props}>
             <DialogContent>
-                <img src="/zones.jpg"/>
+                <img src="/zones.jpg" alt="zones" />
             </DialogContent>
         </MyDialog>
     );
@@ -193,7 +193,13 @@ function ReservationPopup(props) {
 export function Calendar(props) {
     const classes = useStyles();
     const [hollidays, setHollidays] = React.useState(false);    
-    const [reservation, setReservation] = React.useState(false);    
+    const [reservation, setReservation] = React.useState(false); 
+    //const componentDidMount = () => {
+        //fetch('http://jsonplaceholder.typicode.com/users')
+        //.then(res => res.json())
+        //.then(data => this.setState({ contacts: data }))
+        //.catch(console.log)
+    //}
     const getEvents = (d, successCallback, failureCallback) => {
     }
     const addEvent = (d) => {
@@ -203,7 +209,7 @@ export function Calendar(props) {
     const selectEvent = (e) => {
     }
     return (
-      <Box classes={classes.calendar} maxWidth="100%" p={3} >
+      <Box className={classes.calendar} maxWidth="100%" p={3} >
         <HolidaysPopup open={hollidays} onClose={setHollidays}/>
         <ReservationPopup open={reservation} onClose={setReservation}/>
         
@@ -216,7 +222,7 @@ export function Calendar(props) {
             center: 'title',
             right: 'prev,next'
           }}
-          refetchResourcesOnNavigate={true}
+          //refetchResourcesOnNavigate={true}
           events={getEvents}
           selectable={true}
           select={addEvent}
