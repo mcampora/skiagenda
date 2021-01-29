@@ -16,9 +16,9 @@ import DarkIcon from '@material-ui/icons/Brightness3';
 import LightIcon from '@material-ui/icons/Brightness5';
 
 import Amplify, { Auth } from 'aws-amplify';
-import { Authenticator, SignIn, ConfirmSignIn, VerifyContact, ForgotPassword, RequireNewPassword, SignUp, ConfirmSignUp } from 'aws-amplify-react';
+import { AuthState, onAuthUIStateChange } from '@aws-amplify/ui-components';
+import { AmplifyAuthenticator } from "@aws-amplify/ui-react";
 import awsconfig from './aws-exports';
-import amplifyTheme from './amplifyTheme'
 
 import { Calendar } from './Calendar/Calendar.js';
 
@@ -52,13 +52,17 @@ async function signOut() {
 
 function UserMenu(props) {
   const { loggedIn } = props;  
+  console.log('loggedIn: ' + loggedIn);
   return (
     <React.Fragment>
-      { loggedIn && (
-          <IconButton onClick={ signOut } color="inherit" >
-            <PowerSettingsNewIcon />
-          </IconButton>
-      )}  
+      {/*<AmplifySignOut />*/}
+      { loggedIn ? (
+        <IconButton onClick={ signOut } color="inherit" >
+          <PowerSettingsNewIcon />
+        </IconButton>
+      ) : (
+        <div />
+      )}
     </React.Fragment>
   );
 }
@@ -95,21 +99,18 @@ function Body(props) {
   return ( <Calendar/> );
 }
 
-const authTheme = amplifyTheme;
-
 function App() {
-  // user state and event handlers
-  const [loggedIn, setLoggedIn] = useState(false);
-  const handleAuthStateChange = (state) => {
-    console.log(state);
-    if (state === 'signedIn') {
-      /* Do something when the user has signed-in */
-      setLoggedIn(true);
-    }
-    else {
-      setLoggedIn(false);
-    }
-  };
+  // amplify state
+  const [authState, setAuthState] = React.useState();
+  const [user, setUser] = React.useState();
+  React.useEffect(() => {
+      onAuthUIStateChange((nextAuthState, authData) => {
+        console.log(nextAuthState);
+        console.log(authData);
+        setAuthState(nextAuthState);
+        setUser(authData)
+      });
+  }, []);
   
   // selected theme and event handler
   const [darkState, setDarkState] = useState(true);
@@ -129,47 +130,23 @@ function App() {
   const handleThemeChange = () => {
     setDarkState(!darkState);
   };
-
+  
+  const loggedIn = (authState === AuthState.SignedIn);
 
   return (
     <ThemeProvider theme={ theme }>
       <CssBaseline />
-      <Banner loggedIn={loggedIn} darkState={darkState} handleThemeChange={handleThemeChange} />
-      {loggedIn === false ? (
-        <div style={{ 
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh'
-          }}>
-          <Authenticator hideDefault={ true } onStateChange={ handleAuthStateChange } theme={ authTheme } >
-            <SignIn />
-            <ConfirmSignIn/>
-            <VerifyContact/>
-            <SignUp />
-            <ConfirmSignUp />
-            <ForgotPassword/>
-            <RequireNewPassword />
-          </Authenticator>
-        </div>
-      ) : (
-        <Body />
-      )}
-      </ThemeProvider>
-  );
-    /*{ loggedIn 
-        ?
-        <Body loggedIn={loggedIn} handleLogin={handleLogin} />
-        :
-        <AmplifyAuthenticator onStateChange={ handleAuthStateChange }>
-          <AlwaysOn />
-          <div style={{ 
-            display: 'flex',
-            justifyContent: 'center' }}>
-            <AmplifySignIn />
+      <Banner loggedIn={ (authState === AuthState.SignedIn) } darkState={ darkState } handleThemeChange={ handleThemeChange } />
+      { (authState === AuthState.SignedIn) ? (
+          <div className="App">
+            <Body />
           </div>
-        </AmplifyAuthenticator>
+        ) : (
+          <AmplifyAuthenticator />
+        )
       }
-    */}
+    </ThemeProvider>
+  );
+};
 
 export default App;

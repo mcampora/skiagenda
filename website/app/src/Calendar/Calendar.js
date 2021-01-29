@@ -1,13 +1,14 @@
 import React from 'react';
+
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interaction from '@fullcalendar/interaction'
+
 import CloseIcon from '@material-ui/icons/Close';
 import { makeStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
 import { Button, Typography } from '@material-ui/core';
 import Dialog from '@material-ui/core/Dialog';
-//import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import { withStyles } from '@material-ui/core/styles';
@@ -17,7 +18,6 @@ import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import MenuItem from '@material-ui/core/MenuItem';
 
-//var theme = null;
 const useStyles = makeStyles((theme) => ({
   calendar: {
     flexGrow: 1,
@@ -194,12 +194,12 @@ export function Calendar(props) {
     const classes = useStyles();
     const [hollidays, setHollidays] = React.useState(false);    
     const [reservation, setReservation] = React.useState(false); 
-    //const componentDidMount = () => {
+    const componentDidMount = () => {
         //fetch('http://jsonplaceholder.typicode.com/users')
         //.then(res => res.json())
         //.then(data => this.setState({ contacts: data }))
         //.catch(console.log)
-    //}
+    }
     const getEvents = (d, successCallback, failureCallback) => {
     }
     const addEvent = (d) => {
