@@ -16,6 +16,9 @@ Resources:
       ProvisionedThroughput: 
         ReadCapacityUnits: "5"
         WriteCapacityUnits: "5"
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
 
   Holidays:
     Type: AWS::DynamoDB::Table
@@ -30,3 +33,6 @@ Resources:
       ProvisionedThroughput: 
         ReadCapacityUnits: "5"
         WriteCapacityUnits: "5"
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"

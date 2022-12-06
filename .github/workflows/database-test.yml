@@ -6,7 +6,7 @@ on:
     # note: to run tests on a PR branch uses '- '!main' to exclude the main branch
     branches: 
       - main
-    # focus on the database sub-folder
+    # focus on the changes inside the database sub-folder
     paths:
       - 'database/**'
 
@@ -14,8 +14,8 @@ jobs:
   update-database:
     runs-on: ubuntu-latest
     steps:
-      # checks-out the repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - name: Check-out files
+        uses: actions/checkout@v2
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -24,8 +24,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_TEST }}
           aws-region: eu-west-1
 
-      # Runs a single command using the runners shell
-      - name: hello
+      - name: Create/update tables
         run: |
           cd ./database/scripts
           ./deploy.sh
