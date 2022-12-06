@@ -1,7 +1,8 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: Creates the database layer, DynamoDB tables 
+
 Resources:
-  # DynamoDB tables
+
   Reservations:
     Type: AWS::DynamoDB::Table
     Properties: 
@@ -15,6 +16,7 @@ Resources:
       ProvisionedThroughput: 
         ReadCapacityUnits: "5"
         WriteCapacityUnits: "5"
+
   Holidays:
     Type: AWS::DynamoDB::Table
     Properties: 
