@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 # select dev or prod environment
 export TARGET=""
@@ -8,8 +8,7 @@ then
 fi
 
 # create the database
-aws \
-    cloudformation deploy \
+aws cloudformation deploy \
     --capabilities CAPABILITY_IAM \
     --stack-name skiagenda-database \
     --template-file ./database.yaml \

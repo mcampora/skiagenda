@@ -1,12 +1,14 @@
+#!/bin/bash
+
 # select dev or prod environment
-export TARGET=$1
-if [ -z $TARGET ]
+export TARGET=""
+if [ -n "$1" ]
 then
-    export TARGET='default'
+    export TARGET="--profile $1"
 fi
 
-# delete the database
-aws --profile $TARGET \
-    dynamodb create-backup \
+# backup the database content
+aws dynamodb create-backup \
     --table-name Reservations \
-    --backup-name reservations-backup
+    --backup-name reservations-backup \
+    $TARGET
