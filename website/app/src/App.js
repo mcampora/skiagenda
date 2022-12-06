@@ -52,7 +52,7 @@ async function signOut() {
 
 function UserMenu(props) {
   const { loggedIn } = props;  
-  console.log('loggedIn: ' + loggedIn);
+  //console.log('loggedIn: ' + loggedIn);
   return (
     <React.Fragment>
       {/*<AmplifySignOut />*/}
@@ -105,8 +105,8 @@ function App() {
   const [user, setUser] = React.useState();
   React.useEffect(() => {
       onAuthUIStateChange((nextAuthState, authData) => {
-        console.log(nextAuthState);
-        console.log(authData);
+        //console.log(nextAuthState);
+        //console.log(authData);
         setAuthState(nextAuthState);
         setUser(authData)
       });
@@ -136,11 +136,9 @@ function App() {
   return (
     <ThemeProvider theme={ theme }>
       <CssBaseline />
-      <Banner loggedIn={ (authState === AuthState.SignedIn) } darkState={ darkState } handleThemeChange={ handleThemeChange } />
-      { (authState === AuthState.SignedIn) ? (
-          <div className="App">
+      <Banner loggedIn={ loggedIn } user={ user } darkState={ darkState } handleThemeChange={ handleThemeChange } />
+      { loggedIn ? (
             <Body />
-          </div>
         ) : (
           <AmplifyAuthenticator />
         )

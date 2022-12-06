@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interaction from '@fullcalendar/interaction'
+
+import Amplify, { Auth, API } from 'aws-amplify';
 
 import CloseIcon from '@material-ui/icons/Close';
 import { makeStyles } from '@material-ui/core/styles';
@@ -194,12 +196,48 @@ export function Calendar(props) {
     const classes = useStyles();
     const [hollidays, setHollidays] = React.useState(false);    
     const [reservation, setReservation] = React.useState(false); 
-    const componentDidMount = () => {
-        //fetch('http://jsonplaceholder.typicode.com/users')
-        //.then(res => res.json())
-        //.then(data => this.setState({ contacts: data }))
-        //.catch(console.log)
-    }
+    useEffect(() => {
+        console.log('Calendar::useEffect');
+        Amplify.configure({
+            API: {
+              endpoints: [
+                {
+                  name: "skiagenda",
+                  //name: "skiagenda",
+                  //endpoint: "https://ypudks30mg.execute-api.us-east-1.amazonaws.com/dev",
+                  endpoint: "https://cudo68e2d5.execute-api.us-east-1.amazonaws.com/prod",
+                  custom_header: async () => { 
+                    // return { Authorization : 'token' } 
+                    // Alternatively, with Cognito User Pools use this:
+                    return { Authorization: `Bearer ${(await Auth.currentSession()).getAccessToken().getJwtToken()}` }
+                    // return { Authorization: `Bearer ${(await Auth.currentSession()).getIdToken().getJwtToken()}` }
+                  }
+                }
+              ]
+            }
+        });
+        const apiName = 'skiagenda';
+        const path = '/resa'; 
+        const myInit = { }; // OPTIONAL
+            //headers: async () => { 
+                // return { Authorization : 'token' } 
+                // Alternatively, with Cognito User Pools use this:
+                //return { Authorization: `Bearer ${(await Auth.currentSession()).getAccessToken().getJwtToken()}` }
+                // return { Authorization: `Bearer ${(await Auth.currentSession()).getIdToken().getJwtToken()}` }
+            //},
+            //response: true, // OPTIONAL (return the entire Axios response object instead of only response.data)
+            //queryStringParameters: {  // OPTIONAL
+            //},
+        //};
+        API.get(apiName, path, myInit)
+        .then(response => {
+            console.log(response);
+        })
+        .catch(error => {
+            console.log(error);
+            console.log(error.response);
+        });
+    });
     const getEvents = (d, successCallback, failureCallback) => {
     }
     const addEvent = (d) => {

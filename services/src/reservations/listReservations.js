@@ -5,10 +5,10 @@ const resa = new reservations(AWS)
 
 exports.handler = (event, context, callback) => {
     console.log('Received event: ', event)
-    if (!event.requestContext.authorizer) {
-      utils.errorResponse('Authorization not configured', context.awsRequestId, callback)
-      return
-    }
+    //if (!event.requestContext.authorizer) {
+      //utils.errorResponse('Authorization not configured', context.awsRequestId, callback)
+      //return
+    //}
     var month = event.queryStringParameters.month
     if (!month) {
         month = new Date().toISOString()

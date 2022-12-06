@@ -4,3 +4,5 @@
 test/localconfig.js
 .DS_Store
 website/app/.eslintcache
+website/app/amplify
+**/amplify

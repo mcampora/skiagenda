@@ -1,5 +1,0 @@
-{
-    "tableName": "dynamodbResa",
-    "partitionKeyName": "resaid",
-    "partitionKeyType": "S"
-}

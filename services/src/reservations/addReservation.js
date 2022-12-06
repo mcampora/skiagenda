@@ -7,10 +7,10 @@ const resa = new reservations(AWS)
 // addReservation lambda function
 exports.handler = (event, context, callback) => {
     console.log('Received event: ', event)
-    if (!event.requestContext.authorizer) {
-    utils.errorResponse('Authorization not configured', context.awsRequestId, callback)
-    return
-    }
+    //if (!event.requestContext.authorizer) {
+    //utils.errorResponse('Authorization not configured', context.awsRequestId, callback)
+    //return
+    //}
     const request = JSON.parse(event.body)
     const username = event.requestContext.authorizer.claims['cognito:username']
     const params = request.resa
