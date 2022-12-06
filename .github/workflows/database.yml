@@ -1,6 +1,14 @@
-# track database changes
+# rebuild and deploy the database on the test account
 name: update-database
-on: push
+on: 
+  push:
+    # track database changes merged on main
+    # note: to run tests on a PR branch uses '- '!main' to exclude the main branch
+    branches: 
+      - main
+    # focus on the database sub-folder
+    paths:
+      - 'database/**'
 
 jobs:
   update-database:
