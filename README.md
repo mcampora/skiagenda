@@ -33,4 +33,10 @@
             * summary - description (ex. Vacances de la Toussaint - Zone A)
             * zone - letter code A/B/C
         * Users at the moment are captured in Cognito as simple identities
-
+* todo
+    * implement and test the dev workflow for database
+    * implement and test the dev workflow for services
+    * implement and test the dev workflow for website
+    * implement and test the prod workflows
+    * test R53 and CloudFront
+    * can move AWS secrets to roles and temporary tokens

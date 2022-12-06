@@ -26,5 +26,8 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: hello
-        run: aws s3 ls
+        run: |
+          cd ./database/scripts
+          ./deploy.sh
+      
 

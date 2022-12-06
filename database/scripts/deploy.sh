@@ -1,13 +1,16 @@
+#!/bin/bash -x
+
 # select dev or prod environment
-export TARGET=$1
-if [ -z $TARGET ]
+export TARGET=""
+if [ -n "$1" ]
 then
-    export TARGET='default'
+    export TARGET="--profile $1"
 fi
 
 # create the database
-aws --profile $TARGET \
+aws \
     cloudformation deploy \
     --capabilities CAPABILITY_IAM \
     --stack-name skiagenda-database \
-    --template-file ./database.yaml 
+    --template-file ./database.yaml \
+    $TARGET
