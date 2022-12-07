@@ -1,10 +1,10 @@
 my ci/cd/cd automation could look like this:
 
 push on master
-    create if need be the artefactory bucket
+    create if need be the artefactory bucket, lambda role and any other general resource
     module holidays
         build and package the module
-        run unit tests for db services
+        run unit tests for db and services
         deploy the lambda(s)
     module resa
         build and package the module
