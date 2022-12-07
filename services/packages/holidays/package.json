@@ -4,10 +4,10 @@
     "rimraf": "^3.0.2"
   },
   "dependencies": {
-    "holidays-db": "*",
-    "utils": "*",
+    "holidays-db": "^0.0.2",
     "ical": "^0.6.0",
-    "rollup": "^2.60.2"
+    "rollup": "^2.60.2",
+    "utils": "^0.0.2"
   },
   "bundledDependencies": [
     "holidays-db",
@@ -19,7 +19,7 @@
     "test": "jasmine"
   },
   "name": "holidays",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "dist/index.js",
   "author": "mcampora",
   "license": "Apache-2.0"

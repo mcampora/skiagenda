@@ -1,10 +1,8 @@
 {
   "name": "client",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "skiagenda lambda functions",
   "main": "config.js",
-  "dependencies": {
-  },
   "scripts": {
     "test": "echo \"Warning: no test specified\""
   },
