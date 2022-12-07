@@ -1,0 +1,17 @@
+{
+  "devDependencies": {
+    "jasmine": "^4.5.0",
+    "rimraf": "^3.0.2"
+  },
+  "dependencies": {
+    "rollup": "^2.60.2"
+  },
+  "scripts": {
+    "build": "rimraf dist && rollup --config",
+    "test": "echo 'no tests!'"
+  },
+  "name": "utils",
+  "main": "dist/index.js",
+  "author": "mcampora",
+  "license": "Apache-2.0"
+}

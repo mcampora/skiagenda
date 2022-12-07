@@ -1,0 +1,19 @@
+{
+  "devDependencies": {
+    "jasmine": "^4.5.0",
+    "rimraf": "^3.0.2"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.566.0",
+    "node-ical": "^0.15.3",
+    "rollup": "^2.60.2"
+  },
+  "scripts": {
+    "build": "rimraf dist && rollup --config",
+    "test": "jasmine"
+  },
+  "main": "dist/index.js",
+  "name": "holidays-db",
+  "author": "mcampora",
+  "license": "Apache-2.0"
+}

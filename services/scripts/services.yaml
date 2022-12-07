@@ -9,6 +9,7 @@ Parameters:
     Default: skiagenda-rawdata
 
 Resources:
+
   # Cognito identity management
   UserPool:
     Type: AWS::Cognito::UserPool

@@ -1,6 +1,6 @@
 var AWS = require('aws-sdk') // Load the AWS SDK for Node.js
 AWS.config.update({region: 'us-east-1'}) // Set the region 
-var Reservations = require('reservations-db')
+var Reservations = require('../../src/reservations-db')
 var resa = new Reservations(AWS)
 
 describe("Reservation test suite -", function() {

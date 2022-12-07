@@ -1,0 +1,10 @@
+{
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+  },
+  "dependencies": {
+  },
+  "name": "services"
+}
