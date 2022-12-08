@@ -19,66 +19,75 @@ if (!localStorage) {
 }
 
 // import the application files
-eval(fs.readFileSync('./src/client/config.js').toString());
-eval(fs.readFileSync('./src/client/authent.js').toString());
-eval(fs.readFileSync('./src/client/services.js').toString());
+eval(fs.readFileSync('./config.js').toString());
+eval(fs.readFileSync('./authent.js').toString());
+eval(fs.readFileSync('./services.js').toString());
 
 // constants
-const REMOTE_A_SRC="https://fr.ftp.opendatasoft.com/openscol/fr-en-calendrier-scolaire/Zone-A.ics"
-const REMOTE_B_SRC="https://fr.ftp.opendatasoft.com/openscol/fr-en-calendrier-scolaire/Zone-B.ics"
-const REMOTE_C_SRC="https://fr.ftp.opendatasoft.com/openscol/fr-en-calendrier-scolaire/Zone-C.ics"
+const REMOTE_A_SRC="https://fr.ftp.opendatasoft.com/openscol/fr-en-calendrier-scolaire/Zone-A.ics";
+const REMOTE_B_SRC="https://fr.ftp.opendatasoft.com/openscol/fr-en-calendrier-scolaire/Zone-B.ics";
+const REMOTE_C_SRC="https://fr.ftp.opendatasoft.com/openscol/fr-en-calendrier-scolaire/Zone-C.ics";
 
 // the test suite
 describe("Test Holidays API -", function() {
+  var originalTimeout = 0
+  beforeEach(function() {
+      originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL
+      jasmine.DEFAULT_TIMEOUT_INTERVAL = 80000
+  })
 
-    it("fetch client config", function() {
-        expect(_config).not.toBe(null)
-        expect(_config.api.invokeUrl).not.toBe(null)
-    })
+  afterEach(function() {
+      jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout
+  })
 
-    it("clean up the test user", function() {
-      return cleanupUser('mcm').then(() => {
-        expect(true).toBe(true)
-      })
-    })
+  it("fetch client config", function() {
+      expect(_config).not.toBe(null);
+      expect(_config.api.invokeUrl).not.toBe(null);
+  })
 
-    it("register the test user", function() {
-      return register('mcm','success@simulator.amazonses.com','Test#2019').then((d) => {
-        expect(d).not.toBe(null)
-        expect(d.user.username).toBe('mcm')
-      })
+  it("clean up the test user", function() {
+    return cleanupUser('mcm').then(() => {
+      expect(true).toBe(true);
     })
+  })
 
-    it("verify the test user", function() {
-      return confirmUser('mcm').then((d) => {
-        expect(true).toBe(true)
-      })
+  it("register the test user", function() {
+    return register('mcm','success@simulator.amazonses.com','Test#2019').then((d) => {
+      expect(d).not.toBe(null);
+      expect(d.user.username).toBe('mcm');
     })
+  })
 
-    it("sign the test user", function() {
-      return signin('mcm','Test#2019').then((d) => {
-        expect(accessToken).not.toBe(null)
-      })
+  it("verify the test user", function() {
+    return confirmUser('mcm').then((d) => {
+      expect(true).toBe(true);
     })
+  })
 
-    it("refresh holidays", function() {
-      return refreshHolidays(accessToken, {
-        a: REMOTE_A_SRC,
-        b: REMOTE_B_SRC,
-        c: REMOTE_C_SRC
-      })
-      .then(d => {
-          //console.log(d)
-          //expect(d).toEqual([])
-      })
+  it("sign the test user", function() {
+    return signin('mcm','Test#2019').then((d) => {
+      expect(accessToken).not.toBe(null)
     })
+  })
 
-    it("retrieve the list of holidays", function() {
-      return listHolidays(accessToken).then((d) => {
-        //console.log(d)
-        expect(d.Count).toBe(24)
-      })
+  it("refresh holidays", function() {
+    return refreshHolidays(accessToken, {
+      a: REMOTE_A_SRC,
+      b: REMOTE_B_SRC,
+      c: REMOTE_C_SRC
     })
+    .then(d => {
+        //console.log(d);
+        //expect(d).toEqual([]);
+    });
+  })
+
+  it("retrieve the list of holidays", function() {
+    return listHolidays(accessToken).then((d) => {
+      //console.log(d);
+      expect(d.Count).toBeGreaterThan(60)
+    });
+  })
 
 })
 

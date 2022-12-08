@@ -1,11 +1,20 @@
 {
-  "name": "client",
-  "version": "0.0.2",
-  "description": "skiagenda lambda functions",
-  "main": "config.js",
-  "scripts": {
-    "test": "echo \"Warning: no test specified\""
+  "devDependencies": {
+    "jasmine":"^4.5.0"
   },
+  "dependencies": {
+    "amazon-cognito-identity-js":"^6.0.1",
+    "jsdom":"^20.0.3",
+    "jquery":"^3.6.1",
+    "aws-sdk":"^2.1270.0"
+  },
+  "scripts": {
+    "clean": "rm -f package-lock.json && rm -f ../../build/client.zip && rm -rf node_modules",
+    "test": "jasmine",
+    "zip": "mkdir -p ../../build && zip -r ../../build/client.zip ."
+  },
+  "name": "client",
+  "version": "0.0.1",
   "author": "mcampora",
   "license": "Apache-2.0"
 }

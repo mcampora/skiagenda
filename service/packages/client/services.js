@@ -10,13 +10,13 @@ function _ajax(token, rsc, method, params) {
       headers: { Authorization: token },
       data: params,
       contentType: 'application/json'
-  }).promise()
+  }).promise();
 }
 
-var addReservation = (token, params) => { return _ajax(token, '/resa', 'POST', JSON.stringify(params))}
-var listReservations = (token, params) => { return _ajax(token, '/resa', 'GET', params)}
-var updateReservation = (token, params) => { return _ajax(token, '/resa', 'PUT', JSON.stringify(params))}
-var deleteReservation = (token, params) => { return _ajax(token, '/resa', 'DELETE', JSON.stringify(params))}
+var addReservation = (token, params) => { return _ajax(token, '/resa', 'POST', JSON.stringify(params))};
+var listReservations = (token, params) => { return _ajax(token, '/resa', 'GET', params)};
+var updateReservation = (token, params) => { return _ajax(token, '/resa', 'PUT', JSON.stringify(params))};
+var deleteReservation = (token, params) => { return _ajax(token, '/resa', 'DELETE', JSON.stringify(params))};
 
-var refreshHolidays = (token, params) => { return _ajax(token, '/holidays', 'PUT', JSON.stringify(params))}
-var listHolidays = (token) => { return _ajax(token, '/holidays', 'GET', {}) }
+var refreshHolidays = (token, params) => { return _ajax(token, '/holidays', 'PUT', JSON.stringify(params))};
+var listHolidays = (token) => { return _ajax(token, '/holidays', 'GET', {}) };
