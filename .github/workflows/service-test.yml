@@ -51,3 +51,14 @@ jobs:
           ./refresh-lambda.sh 'reservations' 'UpdateReservationFunction'
           ./refresh-lambda.sh 'reservations' 'DeleteReservationFunction'
           ./refresh-lambda.sh 'reservations' 'ListReservationsFunction'
+
+      - name: build-client
+        run: |
+          cd ./service/scripts
+          ./get-config.sh
+          ./build-package.sh 'client'
+          
+      - name: deploy-client
+        run: |
+          cd ./service/scripts
+          ./deploy-package.sh 'client'

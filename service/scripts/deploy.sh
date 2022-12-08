@@ -1,6 +1,7 @@
 #!/bin/bash
 
 ./deploy-infra.sh
+
 ./build-package.sh 'holidays'
 ./build-package.sh 'reservations'
 ./deploy-package.sh 'holidays'
@@ -14,3 +15,4 @@
 
 ./get-config.sh
 ./build-package.sh 'client'
+./deploy-package.sh 'client'
