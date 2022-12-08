@@ -1,8 +1,4 @@
 TBD
-push on master
-    module client
-        build and package the module
-        run unit tests for the api
 merge on prod
     create if need be the artefactory bucket, deploy the api gateway
     module holidays

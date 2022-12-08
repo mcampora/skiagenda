@@ -20,6 +20,9 @@ Resources:
         - email
       AutoVerifiedAttributes:
         - email
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Description: Cognito client app
@@ -27,6 +30,9 @@ Resources:
       ClientName: skiagenda
       UserPoolId: !Ref UserPool
       GenerateSecret: false
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
             
   # lambda functions
   BackendRole:
@@ -52,6 +58,9 @@ Resources:
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
                 Resource: "*"
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   # reservations functions
   AddReservationFunction:
     Type: AWS::Lambda::Function
@@ -67,11 +76,17 @@ Resources:
       Code:
         S3Bucket: !Ref SourceBucketName
         S3Key: services/reservations.zip
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   AddReservationLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Join ['/', ['/aws/lambda', !Ref AddReservationFunction]]
       RetentionInDays: 7 # days
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   ListReservationsFunction:
     Type: AWS::Lambda::Function
     Description: "The function used to list reservations over 3 months"
@@ -86,11 +101,17 @@ Resources:
       Code:
         S3Bucket: !Ref SourceBucketName
         S3Key: services/reservations.zip        
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   ListReservationsLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Join ['/', ['/aws/lambda', !Ref ListReservationsFunction]]
       RetentionInDays: 7 # days
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   DeleteReservationFunction:
     Type: AWS::Lambda::Function
     Description: "The function used to delete a particular reservations"
@@ -105,11 +126,17 @@ Resources:
       Code:
         S3Bucket: !Ref SourceBucketName
         S3Key: services/reservations.zip
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   DeleteReservationLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Join ['/', ['/aws/lambda', !Ref DeleteReservationFunction]]
       RetentionInDays: 7 # days
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   UpdateReservationFunction:
     Type: AWS::Lambda::Function
     Description: "The function used to update a particular reservations"
@@ -124,11 +151,17 @@ Resources:
       Code:
         S3Bucket: !Ref SourceBucketName
         S3Key: services/reservations.zip        
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   UpdateReservationLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Join ['/', ['/aws/lambda', !Ref UpdateReservationFunction]]
       RetentionInDays: 7 # days
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
 
   # holidays functions
   ListHolidaysFunction:
@@ -145,11 +178,17 @@ Resources:
       Code:
         S3Bucket: !Ref SourceBucketName
         S3Key: services/holidays.zip        
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   ListHolidaysLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Join ['/', ['/aws/lambda', !Ref ListHolidaysFunction]]
       RetentionInDays: 7 # days
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   RefreshHolidaysFunction:
     Type: AWS::Lambda::Function
     Description: "The function used to list bank holidays for the 3 zones in France"
@@ -164,11 +203,17 @@ Resources:
       Code:
         S3Bucket: !Ref SourceBucketName
         S3Key: services/holidays.zip                
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   RefreshHolidaysLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Join ['/', ['/aws/lambda', !Ref RefreshHolidaysFunction]]
       RetentionInDays: 7 # days
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
 
   # API Gateway exposing our lambda functions
   RestApi:
@@ -176,6 +221,9 @@ Resources:
     Description: create a REST API that will expose our lambda functions
     Properties:
       Name: skiagenda
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   RestApiAuthorizer:
     Type: 'AWS::ApiGateway::Authorizer'
     Description: "create an authorizer that will control access to this API using the CognitoPool we created before"
@@ -190,6 +238,9 @@ Resources:
       IdentitySource: method.request.header.Authorization
       Name: skiagenda
       RestApiId: !Ref RestApi
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   Resa:
     Type: 'AWS::ApiGateway::Resource'
     Description: "create a resource"
@@ -202,6 +253,9 @@ Resources:
         - RestApi
         - RootResourceId
       PathPart: resa
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   Holidays:
     Type: 'AWS::ApiGateway::Resource'
     Description: "create a resource"
@@ -214,6 +268,9 @@ Resources:
         - RestApi
         - RootResourceId
       PathPart: holidays
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   ResaOptionsMethod:
     Type: AWS::ApiGateway::Method
     Description: Enable CORS on our resource
@@ -243,6 +300,9 @@ Resources:
           method.response.header.Access-Control-Allow-Headers: true
           method.response.header.Access-Control-Allow-Methods: true
           method.response.header.Access-Control-Allow-Origin: true
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   HolidaysOptionsMethod:
     Type: AWS::ApiGateway::Method
     Description: Enable CORS on our resource
@@ -272,6 +332,9 @@ Resources:
           method.response.header.Access-Control-Allow-Headers: true
           method.response.header.Access-Control-Allow-Methods: true
           method.response.header.Access-Control-Allow-Origin: true
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   PostMethod:
     Type: AWS::ApiGateway::Method
     Description: "then a method"
@@ -308,6 +371,9 @@ Resources:
           StatusCode: '200'
       ResourceId: !Ref Resa
       RestApiId: !Ref RestApi
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   ResaGetMethod:
     Type: AWS::ApiGateway::Method
     Description: "then a method"
@@ -345,6 +411,9 @@ Resources:
           StatusCode: '200'
       ResourceId: !Ref Resa
       RestApiId: !Ref RestApi
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   HolidaysGetMethod:
     Type: AWS::ApiGateway::Method
     Description: "then a method"
@@ -382,6 +451,9 @@ Resources:
           StatusCode: '200'
       ResourceId: !Ref Holidays
       RestApiId: !Ref RestApi
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   ResaUpdateMethod:
     Type: AWS::ApiGateway::Method
     Description: "then a method"
@@ -418,6 +490,9 @@ Resources:
           StatusCode: '200'
       ResourceId: !Ref Resa
       RestApiId: !Ref RestApi
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   HolidaysRefreshMethod:
     Type: AWS::ApiGateway::Method
     Description: "then a method"
@@ -454,6 +529,9 @@ Resources:
           StatusCode: '200'
       ResourceId: !Ref Holidays
       RestApiId: !Ref RestApi
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   DeleteMethod:
     Type: AWS::ApiGateway::Method
     Description: "then a method"
@@ -489,6 +567,9 @@ Resources:
           StatusCode: '200'
       ResourceId: !Ref Resa
       RestApiId: !Ref RestApi
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   Deployment:
     Type: AWS::ApiGateway::Deployment
     Description: "then a deployemt & stage"
@@ -504,6 +585,9 @@ Resources:
     Properties:
       RestApiId: !Ref RestApi
       StageName: prod
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   InvokeResaGetPermission:
     Type: "AWS::Lambda::Permission"
     Description: "grant the API gateway the right to invoke listReservationsFunction"
@@ -514,6 +598,9 @@ Resources:
       FunctionName: !GetAtt "ListReservationsFunction.Arn"
       Principal: "apigateway.amazonaws.com"
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/GET/resa"
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   InvokeHolidaysGetPermission:
     Type: "AWS::Lambda::Permission"
     Description: "grant the API gateway the right to invoke listReservationsFunction"
@@ -524,6 +611,9 @@ Resources:
       FunctionName: !GetAtt "ListHolidaysFunction.Arn"
       Principal: "apigateway.amazonaws.com"
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/GET/holidays"
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   InvokeResaPostPermission:
     Type: "AWS::Lambda::Permission"
     Description: "grant the API gateway the right to invoke addReservationFunction"
@@ -534,6 +624,9 @@ Resources:
       FunctionName: !GetAtt "AddReservationFunction.Arn"
       Principal: "apigateway.amazonaws.com"
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/POST/resa"
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   InvokeHolidaysPutPermission:
     Type: "AWS::Lambda::Permission"
     Description: "grant the API gateway the right to invoke addReservationFunction"
@@ -544,6 +637,9 @@ Resources:
       FunctionName: !GetAtt "RefreshHolidaysFunction.Arn"
       Principal: "apigateway.amazonaws.com"
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/PUT/holidays"
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   InvokePutPermission:
     Type: "AWS::Lambda::Permission"
     Description: "grant the API gateway the right to invoke updateReservationFunction"
@@ -554,6 +650,9 @@ Resources:
       FunctionName: !GetAtt "UpdateReservationFunction.Arn"
       Principal: "apigateway.amazonaws.com"
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/PUT/resa"
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
   InvokeDeletePermission:
     Type: "AWS::Lambda::Permission"
     Description: "grant the API gateway the right to invoke deleteReservationFunction"
@@ -564,6 +663,9 @@ Resources:
       FunctionName: !GetAtt "DeleteReservationFunction.Arn"
       Principal: "apigateway.amazonaws.com"
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/DELETE/resa"
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
 
 Outputs:
   apiURL:
