@@ -1,0 +1,11 @@
+{
+  "name": "client",
+  "version": "0.0.2",
+  "description": "skiagenda lambda functions",
+  "main": "config.js",
+  "scripts": {
+    "test": "echo \"Warning: no test specified\""
+  },
+  "author": "mcampora",
+  "license": "Apache-2.0"
+}

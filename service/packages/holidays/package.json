@@ -1,0 +1,21 @@
+{
+  "devDependencies": {
+    "jasmine": "^4.5.0",
+    "rimraf": "^3.0.2"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.566.0",
+    "node-ical": "^0.15.3"
+  },
+  "bundleDependencies": true,
+  "scripts": {
+    "clean": "rm -f package-lock.json && rm -f ../../build/holidays.zip && rimraf node_modules",
+    "test": "jasmine",
+    "zip": "zip -r ../../build/holidays.zip ."
+  },
+  "name": "holidays",
+  "version": "0.0.1",
+  "author": "mcampora",
+  "license": "Apache-2.0",
+  "private": true
+}
