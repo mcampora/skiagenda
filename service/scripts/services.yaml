@@ -21,8 +21,7 @@ Resources:
       AutoVerifiedAttributes:
         - email
       UserPoolTags: 
-        - Key: "app"
-          Value: "skiagenda"
+        app: "skiagenda"
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Description: Cognito client app
