@@ -8,7 +8,7 @@ on:
       - 'database/**'
 
 jobs:
-  update-database:
+  update-database-in-test:
     runs-on: ubuntu-latest
     steps:
       - name: Check-out files
