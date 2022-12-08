@@ -1,0 +1,53 @@
+# rebuild and deploy the database on the test account
+name: update-services-in-test
+on: 
+  push:
+    branches: 
+      - main
+    paths:
+      - 'service/**'
+
+jobs:
+  update-database:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check-out files
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_TEST }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_TEST }}
+          aws-region: us-east-1
+
+      - name: deploy-infra
+        run: |
+          cd ./database/scripts
+          ./deploy-infra.sh
+      
+      - name: build-holidays
+        run: |
+          cd ./database/scripts
+          ./build-package.sh 'holidays'
+
+      - name: build-reservations
+        run: |
+          cd ./database/scripts
+          ./build-package.sh 'reservations'
+
+      - name: deploy-packages
+        run: |
+          cd ./database/scripts
+          ./deploy-package.sh 'holidays'
+          ./deploy-package.sh 'reservations'
+
+      - name: refresh-lambdas
+        run: |
+          cd ./database/scripts
+          ./refresh-lambda.sh 'holidays' 'RefreshHolidaysFunction'
+          ./refresh-lambda.sh 'holidays' 'ListHolidaysFunction'
+          ./refresh-lambda.sh 'reservations' 'AddReservationFunction'
+          ./refresh-lambda.sh 'reservations' 'UpdateReservationFunction'
+          ./refresh-lambda.sh 'reservations' 'DeleteReservationFunction'
+          ./refresh-lambda.sh 'reservations' 'ListReservationsFunction'

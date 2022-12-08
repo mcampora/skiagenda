@@ -1,5 +1,5 @@
 # rebuild and deploy the database on the test account
-name: update-database
+name: update-database-in-prod
 on: 
   push:
     branches: 
