@@ -18,7 +18,7 @@ const errorResponse = (errorMessage, awsRequestId, callback) => {
 }
 
 exports.list = (event, context, callback) => {
-    console.log('Received list event: ', event);
+    //console.log('Received list event: ', event);
     if (!event?.requestContext?.authorizer) {
       errorResponse('Authorization not configured', context?.awsRequestId, callback);
       return;
@@ -27,7 +27,7 @@ exports.list = (event, context, callback) => {
     //console.log("let's start!");
     return holidays.list()
     .then(d => {
-        console.log('got the list: ' + d);
+        //console.log('got the list: ' + d);
         return callback(null, {
             statusCode: 200,
             body: JSON.stringify(d),
@@ -43,7 +43,7 @@ exports.list = (event, context, callback) => {
 }
 
 exports.refresh = (event, context, callback) => {
-    console.log('Received refresh event: ', event);
+    //console.log('Received refresh event: ', event);
     if (!event?.requestContext?.authorizer) {
       errorResponse('Authorization not configured', context?.awsRequestId, callback);
       return;
