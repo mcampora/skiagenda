@@ -57,9 +57,10 @@ Resources:
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
                 Resource: "*"
-      Tags: 
-        - Key: "app"
-          Value: "skiagenda"
+      # permission issue
+      #Tags: 
+      #  - Key: "app"
+      #    Value: "skiagenda"
   # reservations functions
   AddReservationFunction:
     Type: AWS::Lambda::Function
