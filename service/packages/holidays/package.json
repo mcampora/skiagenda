@@ -11,7 +11,7 @@
   "scripts": {
     "clean": "rm -f package-lock.json && rm -f ../../build/holidays.zip && rimraf node_modules",
     "test": "jasmine",
-    "zip": "mkdir -f ../../build && zip -r ../../build/holidays.zip ."
+    "zip": "mkdir -p ../../build && zip -r ../../build/holidays.zip ."
   },
   "name": "holidays",
   "version": "0.0.1",

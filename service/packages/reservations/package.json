@@ -11,7 +11,7 @@
   "scripts": {
     "clean": "rm -f package-lock.json && rm -f ../../build/reservations.zip && rimraf node_modules",
     "test": "jasmine",
-    "zip": "mkdir -f ../../build && zip -r ../../build/reservations.zip ."
+    "zip": "mkdir -p ../../build && zip -r ../../build/reservations.zip ."
   },
   "name": "reservations",
   "version": "0.0.1",
