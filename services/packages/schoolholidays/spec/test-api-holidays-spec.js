@@ -1,4 +1,4 @@
-const holidays = require('holidays')
+const holidays = require('schoolholidays')
 
 // constants
 const REMOTE_A_SRC="https://fr.ftp.opendatasoft.com/openscol/fr-en-calendrier-scolaire/Zone-A.ics"

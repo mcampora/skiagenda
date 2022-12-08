@@ -1,7 +1,7 @@
 var AWS = require('aws-sdk') // Load the AWS SDK for Node.js
 AWS.config.update({region: 'us-east-1'}) // Set the region 
 //import { Holidays } from 'holidays-db';
-const Holidays = require('holidays-db');
+const Holidays = require('schoolholidays-db');
 const holidays = new Holidays(AWS)
 
 const LOCAL_A_SRC="./spec/rsc/Zone-A.ics"

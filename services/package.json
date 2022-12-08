@@ -3,8 +3,9 @@
     "packages/*"
   ],
   "devDependencies": {
+    "lerna": "^6.1.0"
   },
-  "dependencies": {
-  },
-  "name": "services"
+  "name": "skiagenda-services",
+  "version": "0.0.2",
+  "private": true
 }

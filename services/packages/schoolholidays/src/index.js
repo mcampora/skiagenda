@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk')
 AWS.config.update({region: 'us-east-1'}) // Set the region, could use AWS_DEFAULT_REGION variable
 
-const Holidays = require('holidays-db')
+const Holidays = require('schoolholidays-db')
 const holidays = new Holidays(AWS)
 const utils = require('utils')
 

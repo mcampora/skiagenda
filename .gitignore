@@ -7,3 +7,4 @@ test/localconfig.js
 website/app/.eslintcache
 website/app/amplify
 **/amplify
+**/*.tgz
