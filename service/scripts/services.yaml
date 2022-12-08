@@ -20,7 +20,7 @@ Resources:
         - email
       AutoVerifiedAttributes:
         - email
-      Tags: 
+      UserPoolTags: 
         - Key: "app"
           Value: "skiagenda"
   UserPoolClient:
