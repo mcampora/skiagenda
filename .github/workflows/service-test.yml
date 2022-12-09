@@ -28,6 +28,7 @@ jobs:
       
       - name: install-dev-modules
         run: |
+          cd ./service
           npm install
 
       - name: build-holidays
