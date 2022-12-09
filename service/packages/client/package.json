@@ -1,12 +1,8 @@
 {
-  "devDependencies": {
-    "jasmine":"^4.5.0"
-  },
   "dependencies": {
     "amazon-cognito-identity-js":"^6.0.1",
     "jsdom":"^20.0.3",
-    "jquery":"^3.6.1",
-    "aws-sdk":"^2.1270.0"
+    "jquery":"^3.6.1"
   },
   "scripts": {
     "clean": "rm -f package-lock.json && rm -f ../../build/client.zip && rm -rf node_modules",

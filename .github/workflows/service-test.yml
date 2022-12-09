@@ -26,6 +26,10 @@ jobs:
           cd ./service/scripts
           ./deploy-infra.sh
       
+      - name: install-dev-modules
+        run: |
+          npm install
+
       - name: build-holidays
         run: |
           cd ./service/scripts

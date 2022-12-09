@@ -2,6 +2,10 @@
 
 ./deploy-infra.sh
 
+pushd ..
+npm install
+popd
+
 ./build-package.sh 'holidays'
 ./build-package.sh 'reservations'
 ./deploy-package.sh 'holidays'

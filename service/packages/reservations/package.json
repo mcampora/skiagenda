@@ -1,9 +1,5 @@
 {
-  "devDependencies": {
-    "jasmine": "^4.5.0"
-  },
   "dependencies": {
-    "aws-sdk": "^2.566.0",
     "node-ical": "^0.15.3"
   },
   "bundleDependencies": true,
