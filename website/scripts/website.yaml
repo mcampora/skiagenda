@@ -3,11 +3,6 @@ Description: Creates a static website using S3
 
 # input parameters of the template
 Parameters:
-  # SourceBucketName:
-  #   Type: String
-  #   Description: The name for the bucket where all static resources have been uploaded before
-  #   Default: skiagenda-source
-
   WebsiteBucketName:
     Type: String
     Description: The name for the bucket hosting your website
@@ -17,15 +12,17 @@ Resources:
   # web site
   Bucket:
     Type: "AWS::S3::Bucket"
-    Description: S3 bucket containing the Web site content
     Properties:
       BucketName: !Ref WebsiteBucketName
       WebsiteConfiguration:
         IndexDocument: index.html
+        ErrorDocument: error.html
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
 
-  BucketPolicy:
+  WebsiteBucketPolicy:
     Type: "AWS::S3::BucketPolicy"
-    Description: Access policy for the Web site bucket
     Properties:
       Bucket: !Ref Bucket
       PolicyDocument:
@@ -35,117 +32,102 @@ Resources:
             Action: "s3:GetObject"
             Resource: !Sub "arn:aws:s3:::${Bucket}/*"
   
-  # TriggerCopy:
-  #  Type: "Custom::S3Objects"
-  #  Description: object triggering the invokation of the copy function
-  #  Properties: 
-  #     ServiceToken: !GetAtt CopyFunction.Arn
-  #     SourceBucket: !Ref SourceBucketName
-  #     SourcePrefix: "website/"
-  #     Bucket: !Ref Bucket
-
-  # CopyRole:
-  #   Type: AWS::IAM::Role
-  #   Description: the role and access rights the copy function will get
-  #   Properties:
-  #     Path: /
-  #     AssumeRolePolicyDocument:
-  #       Statement: 
-  #         - Effect: Allow
-  #           Principal:
-  #             Service: lambda.amazonaws.com
-  #           Action: sts:AssumeRole
-  #     Policies: 
-  #       - PolicyName: S3Access
-  #         PolicyDocument:
-  #           Statement: 
-  #             - Sid: AllowLogging
-  #               Effect: Allow
-  #               Action:
-  #                 - "logs:CreateLogGroup"
-  #                 - "logs:CreateLogStream"
-  #                 - "logs:PutLogEvents"
-  #               Resource: "*"
-  #             - Sid: SourceBucketReadAccess
-  #               Effect: Allow
-  #               Action:
-  #                 - "s3:ListBucket"
-  #                 - "s3:GetObject"
-  #               Resource: "*"
-  #             - Sid: DestBucketWriteAccess
-  #               Effect: Allow
-  #               Action:
-  #                 - "s3:ListBucket"
-  #                 - "s3:GetObject"
-  #                 - "s3:PutObject"
-  #                 - "s3:PutObjectAcl"
-  #                 - "s3:PutObjectVersionAcl"
-  #                 - "s3:DeleteObject"
-  #                 - "s3:DeleteObjectVersion"
-  #                 - "s3:CopyObject"
-  #               Resource: "*"
-
-  # CopyFunction:  
-  #   Type: AWS::Lambda::Function
-  #   Description: function used to copy content from one S3 bucket to another
-  #   Properties:
-  #     Description: Copies objects from a source S3 bucket to a destination
-  #     Handler: index.handler
-  #     Runtime: python2.7
-  #     Role: !GetAtt CopyRole.Arn
-  #     Timeout: 60
-  #     Code:
-  #       ZipFile: |
-  #         import os
-  #         import json
-  #         import cfnresponse
-  #         import boto3
-  #         from botocore.exceptions import ClientError
-  #         client = boto3.client('s3')
-  #         import logging
-  #         logger = logging.getLogger()
-  #         logger.setLevel(logging.INFO)
-
-  #         def handler(event, context):
-  #           logger.info("Received event: %s" % json.dumps(event))
-  #           source_bucket = event['ResourceProperties']['SourceBucket']
-  #           source_prefix = event['ResourceProperties'].get('SourcePrefix') or ''
-  #           bucket = event['ResourceProperties']['Bucket']
-  #           prefix = event['ResourceProperties'].get('Prefix') or ''
-  #           result = cfnresponse.SUCCESS
-  #           try:
-  #             if event['RequestType'] == 'Create' or event['RequestType'] == 'Update':
-  #               result = copy_objects(source_bucket, source_prefix, bucket, prefix)
-  #             elif event['RequestType'] == 'Delete':
-  #               result = delete_objects(bucket, prefix)
-  #           except ClientError as e:
-  #             logger.error('Error: %s', e)
-  #             result = cfnresponse.FAILED
-  #           cfnresponse.send(event, context, result, {})
-
-  #         def copy_objects(source_bucket, source_prefix, bucket, prefix):
-  #           paginator = client.get_paginator('list_objects_v2')
-  #           page_iterator = paginator.paginate(Bucket=source_bucket, Prefix=source_prefix)
-  #           for key in {x['Key'] for page in page_iterator for x in page['Contents']}:
-  #             dest_key = os.path.join(prefix, os.path.relpath(key, source_prefix))
-  #             if not key.endswith('/'):
-  #               print 'copy {} to {}'.format(key, dest_key)
-  #               client.copy_object(CopySource={'Bucket': source_bucket, 'Key': key}, Bucket=bucket, Key = dest_key)
-  #           return cfnresponse.SUCCESS
-
-  #         def delete_objects(bucket, prefix):
-  #           paginator = client.get_paginator('list_objects_v2')
-  #           page_iterator = paginator.paginate(Bucket=bucket, Prefix=prefix)
-  #           objects = [{'Key': x['Key']} for page in page_iterator for x in page['Contents']]
-  #           client.delete_objects(Bucket=bucket, Delete={'Objects': objects})
-  #           return cfnresponse.SUCCESS
-
-  # CopyLogGroup:
-  #   Type: AWS::Logs::LogGroup
-  #   Properties:
-  #     LogGroupName: !Join ['/', ['/aws/lambda', !Ref CopyFunction]]
-  #     RetentionInDays: 7 # days
+  WebsiteDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        #Aliases:
+        #- mysite.example.com
+        #CacheBehaviors: 
+        #- ...
+        #CNAMEs:
+        #Comment:
+        #ContinuousDeploymentPolicyId:
+        CustomErrorResponses:
+        - #ErrorCachingMinTTL: Double
+          ErrorCode: 403
+          ResponseCode: 403
+          ResponsePagePath: /error.html
+        #CustomOrigin:
+        DefaultCacheBehavior:
+          AllowedMethods:
+          - GET
+          - HEAD
+          - OPTIONS
+          - PUT
+          - POST
+          - PATCH
+          - DELETE
+          #CachedMethods:
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          Compress: true
+          #DefaultTTL:
+          #FieldLevelEncryptionId:
+          #ForwardedValues: # deprecated, use a cache policy instead
+            #QueryString: false
+            #Cookies:
+              #Forward: none
+          #FunctionAssociations:
+          #LambdaFunctionAssociations:
+          #MaxTTL: # deprecated
+          #MinTTL: # deprecated
+          #OriginRequestPolicyId:
+          #RealtimeLogConfigArn: String
+          #ResponseHeadersPolicyId: String
+          #SmoothStreaming: Boolean
+          TargetOriginId: WebsiteOriginId
+          #TrustedKeyGroups: 
+          #- String
+          #TrustedSigners:
+          #- String
+          ViewerProtocolPolicy: redirect-to-https
+        DefaultRootObject: index.html
+        Enabled: true
+        HttpVersion: http2
+        IPV6Enabled: true
+        #Logging:
+          #IncludeCookies: false
+          #Bucket: mylogs.s3.amazonaws.com
+          #Prefix: myprefix
+          #OriginGroups: 
+            #OriginGroups
+        Origins:
+        - #ConnectionAttempts: Integer
+          #ConnectionTimeout: Integer
+          #CustomOriginConfig: 
+            #CustomOriginConfig
+          #DomainName: String
+          DomainName: skiagenda-test.s3.us-east-1.amazonaws.com
+          Id: WebsiteOriginId
+          #OriginAccessControlId: String
+          #OriginCustomHeaders: 
+          #- OriginCustomHeader
+          #OriginPath: String
+          #OriginShield: 
+            #OriginShield
+          S3OriginConfig: 
+            OriginAccessIdentity: ''
+        PriceClass: PriceClass_All
+        #Restrictions: 
+          #Restrictions
+        #S3Origin: 
+          #LegacyS3Origin
+        #Staging: Boolean
+        #ViewerCertificate: 
+          #ViewerCertificate
+        ViewerCertificate:
+          #AcmCertificateArn: String
+          CloudFrontDefaultCertificate: true
+          #IamCertificateId: String
+          #MinimumProtocolVersion: String
+          #SslSupportMethod: String
+        #WebACLId: String
+      Tags: 
+        - Key: "app"
+          Value: "skiagenda"
 
 Outputs:
   websiteURL:
-    Value: !GetAtt Bucket.WebsiteURL
+    Value: !GetAtt WebsiteDistribution.DomainName
+  cloudFrontId:
+    Value: !GetAtt WebsiteDistribution.Id

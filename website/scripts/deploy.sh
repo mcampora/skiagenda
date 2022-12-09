@@ -11,14 +11,20 @@ aws cloudformation deploy \
     --template-file ./website.yaml \
     --parameter-overrides WebsiteBucketName=$BUCKET_NAME
 
+## extract output variables
+export url=`aws cloudformation describe-stacks --stack-name skiagenda-website --query "Stacks[0].Outputs[?OutputKey=='websiteURL'].OutputValue" --output text`
+export id=`aws cloudformation describe-stacks --stack-name skiagenda-website --query "Stacks[0].Outputs[?OutputKey=='cloudFrontId'].OutputValue" --output text`
+echo "resources:"
+echo "https://${url}"
+echo ${id}
+
 # fetch services helpers
 pushd ../src/js
     npm install
 popd
 
 # upload/synchronize content
-aws s3 sync ../src s3://$BUCKET_NAME
+aws s3 sync --delete ../src s3://$BUCKET_NAME
 
-## extract output variables
-export url=`aws cloudformation describe-stacks --stack-name skiagenda-website --query "Stacks[0].Outputs[?OutputKey=='websiteURL'].OutputValue" --output text`
-echo $url
+# invalidate CloudFront cache
+aws cloudfront create-invalidation --distribution-id ${id} --paths "/*"
