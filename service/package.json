@@ -1,7 +1,7 @@
 {
   "devDependencies": {
     "jasmine": "^4.5.0",
-    "aws-sdk": "^2.566.0"
+    "aws-sdk":"^2.1271.0"
   },
   "scripts": {
     "clean": "rm -f package-lock.json && rm -rf node_modules"
