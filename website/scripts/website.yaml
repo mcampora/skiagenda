@@ -145,7 +145,6 @@ Resources:
   #   Properties:
   #     LogGroupName: !Join ['/', ['/aws/lambda', !Ref CopyFunction]]
   #     RetentionInDays: 7 # days
-              
 
 Outputs:
   websiteURL:

@@ -35,7 +35,6 @@
             * zone - letter code A/B/C
         * Users at the moment are captured in Cognito as simple identities
 * todo
-    * implement and test the dev workflow for services
     * implement and test the prod workflow for services
     * implement and test the dev workflow for website
     * implement and test the prod workflow for website

@@ -1,14 +1,15 @@
 {
   "name": "js",
-  "version": "0.0.1",
-  "description": "skiagenda website js folder",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "rm -f package-lock.json && rm -rf node_modules",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "zip": "echo \"Error: no zip procedure specified\" && exit 1"
   },
-  "author": "mcm",
-  "license": "ISC",
+  "version": "0.0.1",
+  "author": "mcampora",
+  "license": "Apache-2.0",
   "dependencies": {
-    "client": "file:../../../services/src/client"
+    "client": "file:../../../service/packages/client"
   }
 }
