@@ -8,7 +8,7 @@ on:
       - 'website/**'
 
 jobs:
-  update-services-in-test:
+  update-website-in-test:
     runs-on: ubuntu-latest
     steps:
       - name: Check-out files
